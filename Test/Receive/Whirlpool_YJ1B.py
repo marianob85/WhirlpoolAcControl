@@ -17,16 +17,26 @@ import collections
 #   Bit: 0-3 - Temperature 0: 16deg, 1: 17deg  etc..
 #   Bit: 4-7 - 4 second interval - 60sec/15
 # Byte 2:
-#   Bit: 0-5 - Minutes
-#   Bit: 6 - AM/PM
+#   Bit: 0-5 - Clock: Minutes
+#   Bit: 6 - Clock: AM/PM
 #   Bit: 7 - Unknown
 # Byte 3:
-#   Bit: 0-3 - Hours
-#   Bit: 4-7 - Unknown
-
+#   Bit: 0-3 - Clock: Hours
+#   Bit: 4-7 - Timer On: minutes
+# Byte 4:
+#   Bit: 0-1 - Timer On: minutes
+#   Bit: 2 - Timer On:  AM/PM
+#   Bit: 3 - Timer On: enable/disable
+#   Bit: 4-7 - Timer On: hours
+# Byte 5:
+#   Bit: 0-5 - Timer Off: minutes
+#   Bit: 6 - Timer Off: AM/PM
+#   Bit: 7 - Timer Off: enable/disable
 # Byte 6:
+#   Bit: 0-3 - Timer Off(hours)
 #   Bit: 4 - Jet
 #   Bit: 5 - Light
+
 
 
 class WhirpoolYJ1B:
@@ -44,6 +54,16 @@ class WhirpoolYJ1B:
         protocol["Clock: Minutes"] = (data[2] & 0b111111 )
         protocol["Clock: Hours"] = (data[3] & 0b1111)
         protocol["Clock:"] = self.getAMPM( (data[3] >> 6 ) & 0b1)
+        protocol["Timer Off: Minutes"] = data[5] & 0b111111
+        protocol["Timer Off: Hours"] = data[6] & 0b1111
+        protocol["Timer Off:"] = self.getAMPM( (data[5] >> 6 ) & 0b1 )
+        protocol["Timer Off: Enable"] = bool((data[5] >> 7) & 0b1)
+
+        protocol["Timer On: Minutes"] = ( ( data[3] >> 4 ) & 0b11111 ) & ( data[4] << 4 & 0b000011 )
+        protocol["Timer On: Hours"] = (data[4] >> 4 ) & 0b1111
+        protocol["Timer On:"] = self.getAMPM( (data[4] >> 2 ) & 0b1 )
+        protocol["Timer On: Enable"] = bool((data[4] >> 3) & 0b1)
+
         protocol["Jet"] = bool( ( data[6] >> 4 ) & 0b1 )
         protocol["Light"] = bool((data[6] >> 5) & 0b1)
         print("")
