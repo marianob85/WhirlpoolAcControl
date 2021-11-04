@@ -36,8 +36,9 @@ import collections
 #   Bit: 0-3 - Timer Off(hours)
 #   Bit: 4 - Jet
 #   Bit: 5 - Light
-
-
+#   Bit: 6-7 - Unknown
+# Byte 7: - Unknown
+# Byte 8: - Unknown
 
 class WhirpoolYJ1B:
     def onCommand(self, data, rawData):
