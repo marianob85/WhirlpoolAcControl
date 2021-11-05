@@ -1,0 +1,24 @@
+[
+    {
+        "name": "clang",
+        "compilers": {
+            "CXX": "clang++-",
+            "C": "clang-"
+        },
+        "toolchainFile": "${workspaceFolder}/cmake/toolchain/clang.cmake"
+    },
+    {
+        "name": "Windows 64 - VS2019",
+        "visualStudio": "Visual Studio Professional 2019",
+        "visualStudioArchitecture": "amd64",
+        "preferredGenerator": {
+            "name": "Visual Studio 16 2019",
+            "platform": "x64",
+            "toolset": "host=x64"
+        },
+        "cmakeSettings": {
+            "BUILD_TESTING":"ON"
+        },    
+        "toolchainFile": "${workspaceFolder}/cmake/toolchain/msvc.cmake"
+    }
+]
