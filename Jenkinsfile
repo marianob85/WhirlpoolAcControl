@@ -19,8 +19,8 @@ pipeline
 
 					sh '''
 						arduino-cli core update-index
-						#arduino-cli lib install "OneWire"
-						#arduino-cli lib install "DallasTemperature"
+						arduino-cli lib install "OneWire"
+						arduino-cli lib install "DallasTemperature"
 						arduino-cli compile --fqbn arduino:avr:uno WhirlpoolAcControl
 					'''
 				}

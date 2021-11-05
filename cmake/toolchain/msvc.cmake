@@ -23,8 +23,8 @@ add_compile_options(
 )
 
 add_compile_definitions(
-	_UNICODE
-	UNICODE
+	#_UNICODE
+	#UNICODE
 )
 
 set(CMAKE_CXX_FLAGS "/GR /EHsc"

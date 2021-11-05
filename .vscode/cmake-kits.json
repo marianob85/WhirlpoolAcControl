@@ -2,8 +2,8 @@
     {
         "name": "clang",
         "compilers": {
-            "CXX": "clang++-",
-            "C": "clang-"
+            "CXX": "clang++",
+            "C": "clang"
         },
         "toolchainFile": "${workspaceFolder}/cmake/toolchain/clang.cmake"
     },
