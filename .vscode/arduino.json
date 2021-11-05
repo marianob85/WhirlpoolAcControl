@@ -1,0 +1,11 @@
+{
+    "sketch": "WhirlpoolAcControl.ino",
+    "board": "arduino:avr:uno",
+    "port": "COM5",
+    "buildPreferences": [
+        [
+            "compiler.cpp.extra_flags",
+            "-DRAW_BUFFER_LENGTH=140"
+        ]
+    ]
+}
