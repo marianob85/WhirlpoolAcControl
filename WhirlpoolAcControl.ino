@@ -18,7 +18,7 @@
 //#define NEC_REPEAT_HEADER_SPACE (4 * NEC_UNIT)  // 2250
 #include "IRremoteInt.h"
 #include <IRremote.h>
-
+#include "src/Whirlpool_YJ1B.hpp"
 static_assert( RAW_BUFFER_LENGTH == 140 );
 
 // PULSE_DISTANCE: HeaderMarkMicros=8950 HeaderSpaceMicros=4400 MarkMicros=600 OneSpaceMicros=1650 ZeroSpaceMicros=550
@@ -26,6 +26,7 @@ static_assert( RAW_BUFFER_LENGTH == 140 );
 void setup()
 {
 	Serial.begin( 115200 );
+	Serial.println(ARDUINO);
 	IrReceiver.begin( IR_RECEIVE_PIN, false );
 	IrSender.begin( IR_SEND_PIN, true );
 	IrSender.enableIROut( AC_KHZ );
@@ -33,6 +34,8 @@ void setup()
 
 void send()
 {
+
+	WhirlpoolYJ1B<2> aa;
 
 	// Header
 	IrSender.mark( AC_HEADER_MARK );
