@@ -9,22 +9,25 @@
 template< int N >
 class WhirlpoolYJ1B
 {
-	template< int T >
-	class Data
+public:
+	static_assert( N > 0, "Size can't be zero" );
+	struct Data
 	{
-		uint16_t m_size{ T };
-		uint8_t m_data[ ( T + 1 ) / 8 ]{};
+		uint8_t data[ ( N + 7 ) / 8 ]{};
+		const uint16_t dataSize{ N };
+		const uint16_t storageSize{ ( N + 7 ) / 8 };
 	};
 
 public:
+	WhirlpoolYJ1B() = default;
+	WhirlpoolYJ1B( const Data& data ) : m_data( data ) {}
 	virtual ~WhirlpoolYJ1B() = default;
-	
-protected:
+
 	const Data& data() const
 	{
 		return m_data;
 	}
 
 private:
-	Data< N > m_data{};
+	Data m_data{};
 };

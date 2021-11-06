@@ -20,6 +20,7 @@ add_compile_options(
 	-Wno-delete-non-virtual-dtor # NuBase
 	-Wno-unused-variable # NuBase
 	-fdeclspec
+	-Wno-macro-redefined
 )
 if( UNIX )
 	add_link_options( "LINKER:-z,defs" )
