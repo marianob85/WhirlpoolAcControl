@@ -1,7 +1,7 @@
 #define IR_RECEIVE_PIN 7 // To be compatible with interrupt example, pin 2 is chosen here.
 #define IR_SEND_PIN 2
 #define DELAY_AFTER_SEND 2000
-#define DEBUG
+//#define DEBUG
 //#define TRACE
 #define DISABLE_LED_FEEDBACK_FOR_RECEIVE // saves 108 bytes program space
 #define DECODE_DISTANCE
@@ -21,12 +21,17 @@
 #include "src/Whirlpool_YJ1B.hpp"
 static_assert( RAW_BUFFER_LENGTH == 140 );
 
+enum class T
+{
+	A,
+	B,
+};
+
 // PULSE_DISTANCE: HeaderMarkMicros=8950 HeaderSpaceMicros=4400 MarkMicros=600 OneSpaceMicros=1650 ZeroSpaceMicros=550
 // 68 bits LSB first
 void setup()
 {
 	Serial.begin( 115200 );
-	Serial.println(ARDUINO);
 	IrReceiver.begin( IR_RECEIVE_PIN, false );
 	IrSender.begin( IR_SEND_PIN, true );
 	IrSender.enableIROut( AC_KHZ );
@@ -35,7 +40,8 @@ void setup()
 void send()
 {
 
-	WhirlpoolYJ1B<2> aa;
+	WhirlpoolYJ1B< 2 > aa;
+	T t;
 
 	// Header
 	IrSender.mark( AC_HEADER_MARK );
@@ -43,7 +49,7 @@ void send()
 
 	const uint32_t a = 0b00000010011100001101100100000100;
 	const uint32_t b = 0b10100000001010101100000000000000;
-	const uint32_t c = 0b101;
+	const uint32_t c = 0b0101;
 
 	IrSender.sendPulseDistanceWidthData(
 		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, a, 32, PROTOCOL_IS_LSB_FIRST, false );
@@ -58,14 +64,14 @@ void send()
 
 void loop()
 {
-	//send();
-	//return;
+	// send();
+	// return;
 	if( IrReceiver.decode() )
 	{
 		Serial.println( "" );
-		Serial.println( "Received" );
+		// Serial.println( "Received" );
 
-		IrReceiver.printIRResultRawFormatted( &Serial );
+		// IrReceiver.printIRResultRawFormatted( &Serial );
 
 		/*
 		 * !!!Important!!! Enable receiving of the next value,
