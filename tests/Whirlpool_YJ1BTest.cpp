@@ -40,9 +40,9 @@ TEST_CASE( "Default value" )
 	auto t = WhirlpoolYJ1BData();
 	auto s = sizeof( WhirlpoolYJ1BData );
 
-	t.bit0.raw = 0x1;
+	//t.bit0.raw = 0x1;
 
-	t.bit0.Power = 0x1;
+	//t.bit0.Power = 0x1;
 
 	// constexpr uint8_t size = 24;
 	// const WhirlpoolYJ1B< size > test;

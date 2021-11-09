@@ -1,10 +1,5 @@
 #define IR_RECEIVE_PIN 7 // To be compatible with interrupt example, pin 2 is chosen here.
 #define IR_SEND_PIN 2
-#define DELAY_AFTER_SEND 2000
-//#define DEBUG
-//#define TRACE
-#define DISABLE_LED_FEEDBACK_FOR_RECEIVE // saves 108 bytes program space
-#define DECODE_DISTANCE
 
 #define AC_KHZ 38
 #define AC_UNIT 560						// 21.28 periods of 38 kHz
@@ -15,17 +10,8 @@
 #define AC_ONE_SPACE ( 3 * AC_UNIT ) // 1690
 #define AC_ZERO_SPACE AC_UNIT
 
-//#define NEC_REPEAT_HEADER_SPACE (4 * NEC_UNIT)  // 2250
 #include "IRremoteInt.h"
 #include <IRremote.h>
-#include "src/Whirlpool_YJ1B.hpp"
-static_assert( RAW_BUFFER_LENGTH == 140 );
-
-enum class T
-{
-	A,
-	B,
-};
 
 // PULSE_DISTANCE: HeaderMarkMicros=8950 HeaderSpaceMicros=4400 MarkMicros=600 OneSpaceMicros=1650 ZeroSpaceMicros=550
 // 68 bits LSB first
@@ -33,16 +19,14 @@ void setup()
 {
 	Serial.begin( 115200 );
 	IrReceiver.begin( IR_RECEIVE_PIN, false );
-	IrSender.begin( IR_SEND_PIN, true );
-	IrSender.enableIROut( AC_KHZ );
+	//IrReceiver.begin( IR_RECEIVE_PIN, false );
+	// IrSender.begin( IR_SEND_PIN, true );
+	// IrSender.enableIROut( AC_KHZ );
 }
 
+/*
 void send()
 {
-
-	WhirlpoolYJ1B< 2 > aa;
-	T t;
-
 	// Header
 	IrSender.mark( AC_HEADER_MARK );
 	IrSender.space( AC_HEADER_SPACE );
@@ -61,6 +45,7 @@ void send()
 
 	Serial.println( "Sended" );
 }
+*/
 
 void loop()
 {
