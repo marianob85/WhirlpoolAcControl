@@ -25,8 +25,6 @@ void setup()
 
 void send()
 {
-	// IrSender.enableIROut( AC_KHZ );
-
 	// Header
 	IrSender.mark( AC_HEADER_MARK );
 	IrSender.space( AC_HEADER_SPACE );
@@ -35,12 +33,9 @@ void send()
 	const uint32_t b = 0b10100000001010101100000000000000;
 	const uint32_t c = 0b0101;
 
-	IrSender.sendPulseDistanceWidthData(
-		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, a, 32, PROTOCOL_IS_LSB_FIRST, false );
-	IrSender.sendPulseDistanceWidthData(
-		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, b, 32, PROTOCOL_IS_LSB_FIRST, false );
-	IrSender.sendPulseDistanceWidthData(
-		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, c, 4, PROTOCOL_IS_LSB_FIRST, true );
+	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, a, 32, false, false );
+	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, b, 32, false, false );
+	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, c, 4, false, true );
 	delay( DELAY_AFTER_SEND );
 
 	Serial.println( "Sended" );
@@ -51,5 +46,4 @@ bool send_test = true;
 void loop()
 {
 	send();
-
 }

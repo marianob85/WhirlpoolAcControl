@@ -119,20 +119,6 @@ void setFeedbackLED(bool aSwitchLedOn) {
     }
 }
 
-/**
- * Old deprecated function name for setLEDFeedback() or enableLEDFeedback() / disableLEDFeedback()
- */
-void IRrecv::blink13(bool aEnableLEDFeedback) {
-    setLEDFeedback(FeedbackLEDControl.FeedbackLEDPin, aEnableLEDFeedback);
-}
-/**
- * Old deprecated function name for setLEDFeedback()
- */
-void setBlinkPin(uint8_t aBlinkPin) {
-    setLEDFeedback(aBlinkPin, FeedbackLEDControl.LedFeedbackEnabled);
-}
-
-/** @}*/
 
 #endif // #ifndef IR_FEEDBACK_LED_HPP
 #pragma once

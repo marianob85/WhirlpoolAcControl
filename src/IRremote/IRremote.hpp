@@ -181,16 +181,8 @@
 /*
  * Include the sources here to enable compilation with macro values set by user program.
  */
-#include "IRReceive.hpp"
 #include "IRSend.hpp"
 
-/*
- * Include the sources of all decoders here to enable compilation with macro values set by user program.
- */
-#include "ir_DistanceProtocol.hpp"
-/**
- * Macros for legacy compatibility
- */
 #define RAWBUF 101 // Maximum length of raw duration buffer
 #define REPEAT 0xFFFFFFFF
 #define USECPERTICK MICROS_PER_TICK
