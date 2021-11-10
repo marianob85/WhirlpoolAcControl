@@ -10,8 +10,7 @@
 #define DELAY_AFTER_SEND 2000
 
 #define SEND_PWM_BY_TIMER
-#include "src/IRremote/IRremoteInt.h"
-#include "src/IRremote/IRremote.h"
+#include "src/IRremote/IRremote.hpp"
 
 // PULSE_DISTANCE: HeaderMarkMicros=8950 HeaderSpaceMicros=4400 MarkMicros=600 OneSpaceMicros=1650 ZeroSpaceMicros=550
 // 68 bits LSB first
