@@ -63,6 +63,7 @@ class PulseDistanceCoding:
             self.pulse = int(pulseData.group(1))
             return
         elif timeout:
+            self.sendEvent()
             self.invalidate(True)
             return
         else:
