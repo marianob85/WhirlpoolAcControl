@@ -47,7 +47,8 @@
 #define VERSION_IRREMOTE_MAJOR 3
 #define VERSION_IRREMOTE_MINOR 5
 
-// activate it for all cores that does not use the -flto flag, if you get false error messages regarding begin() during compilation.
+// activate it for all cores that does not use the -flto flag, if you get false error messages regarding begin() during
+// compilation.
 //#define SUPPRESS_ERROR_MESSAGE_FOR_BEGIN
 
 /*
@@ -65,56 +66,15 @@
  */
 //#define DECODE_MAGIQUEST // This must be enabled explicitly, since it modifies the RAW_BUFFER_LENGTH from 100 to 112
 
-#if !defined(NO_DECODER) // for sending raw only
-#if (!(defined(DECODE_DENON) || defined(DECODE_JVC) || defined(DECODE_KASEIKYO) \
-|| defined(DECODE_PANASONIC) || defined(DECODE_LG) || defined(DECODE_NEC) || defined(DECODE_SAMSUNG) \
-|| defined(DECODE_SONY) || defined(DECODE_RC5) || defined(DECODE_RC6) || defined(DECODE_HASH) \
-|| defined(DECODE_BOSEWAVE) || defined(DECODE_LEGO_PF) || defined(DECODE_WHYNTER)))
-#define DECODE_DENON        // Includes Sharp
-#define DECODE_JVC
-#define DECODE_KASEIKYO
-#define DECODE_PANASONIC    // the same as DECODE_KASEIKYO
-#define DECODE_LG
-#define DECODE_NEC          // Includes Apple and Onkyo
-#define DECODE_SAMSUNG
-#define DECODE_SONY
-#define DECODE_RC5
-#define DECODE_RC6
-
-#  if !defined(EXCLUDE_EXOTIC_PROTOCOLS) // saves around 2000 bytes program space
-#define DECODE_BOSEWAVE
-#define DECODE_LEGO_PF
-#define DECODE_WHYNTER
-#  endif
-
-#  if !defined(EXCLUDE_UNIVERSAL_PROTOCOLS)
-#define DECODE_DISTANCE     // universal decoder for pulse width or pulse distance protocols - requires up to 750 bytes additional program space
-#define DECODE_HASH         // special decoder for all protocols - requires up to 250 bytes additional program space
-#  endif
-#endif
-#endif // !defined(NO_DECODER)
-
-#if defined(DECODE_NEC) && !(~(~DECODE_NEC + 0) == 0 && ~(~DECODE_NEC + 1) == 1)
-#warning "The macros DECODE_XXX no longer require a value. Decoding is now switched by defining / non defining the macro."
-#endif
-
-//#define DEBUG // Activate this for lots of lovely debug output from the IRremote core.
-
-/****************************************************
- *                    RECEIVING
- ****************************************************/
-
-/**
- * The length of the buffer where the IR timing data is stored before decoding
- * 100 is sufficient for most standard protocols, but air conditioners often send a longer protocol data stream
- */
-#if !defined(RAW_BUFFER_LENGTH)
-#  if defined(DECODE_MAGIQUEST)
-#define RAW_BUFFER_LENGTH  112  // MagiQuest requires 112 bytes.
-#  else
-#define RAW_BUFFER_LENGTH  100  ///< Maximum length of raw duration buffer. Must be even. 100 supports up to 48 bit codings inclusive 1 start and 1 stop bit.
+#if !defined( RAW_BUFFER_LENGTH )
+#if defined( DECODE_MAGIQUEST )
+#define RAW_BUFFER_LENGTH 112 // MagiQuest requires 112 bytes.
+#else
+#define RAW_BUFFER_LENGTH \
+	100 ///< Maximum length of raw duration buffer. Must be even. 100 supports up to 48 bit codings inclusive 1 start
+		///< and 1 stop bit.
 //#define RAW_BUFFER_LENGTH  750  // 750 is the value for air condition remotes.
-#  endif
+#endif
 #endif
 #if RAW_BUFFER_LENGTH % 2 == 1
 #error RAW_BUFFER_LENGTH must be even, since the array consists of space / mark pairs.
@@ -131,13 +91,13 @@
  * The right value is critical for IR codes using short pulses like Denon / Sharp / Lego
  *
  *  Observed values:
- *  Delta of each signal type is around 50 up to 100 and at low signals up to 200. TSOP is better, especially at low IR signal level.
- *  VS1838      Mark Excess -50 to +50 us
- *  TSOP31238   Mark Excess 0 to +50
+ *  Delta of each signal type is around 50 up to 100 and at low signals up to 200. TSOP is better, especially at low IR
+ * signal level. VS1838      Mark Excess -50 to +50 us TSOP31238   Mark Excess 0 to +50
  */
-#if !defined(MARK_EXCESS_MICROS)
-// To change this value, you simply can add a line #define "MARK_EXCESS_MICROS <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
-#define MARK_EXCESS_MICROS    20
+#if !defined( MARK_EXCESS_MICROS )
+// To change this value, you simply can add a line #define "MARK_EXCESS_MICROS <My_new_value>" in your ino file before
+// the line "#include <IRremote.hpp>"
+#define MARK_EXCESS_MICROS 20
 #endif
 
 /**
@@ -146,20 +106,22 @@
  * Must be smaller than any gap between a command and a repeat; e.g. the retransmission gap for Sony is around 24 ms.
  * Keep in mind, that this is the delay between the end of the received command and the start of decoding.
  */
-#if !defined(RECORD_GAP_MICROS)
-// To change this value, you simply can add a line #define "RECORD_GAP_MICROS <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
-#define RECORD_GAP_MICROS   5000 // FREDRICH28AC / LG2 header space is 9700, NEC header space is 4500
+#if !defined( RECORD_GAP_MICROS )
+// To change this value, you simply can add a line #define "RECORD_GAP_MICROS <My_new_value>" in your ino file before
+// the line "#include <IRremote.hpp>"
+#define RECORD_GAP_MICROS 5000 // FREDRICH28AC / LG2 header space is 9700, NEC header space is 4500
 #endif
 /**
  * Threshold for warnings at printIRResult*() to report about changing the RECORD_GAP_MICROS value to a higher value.
  */
-#if !defined(RECORD_GAP_MICROS_WARNING_THRESHOLD)
-// To change this value, you simply can add a line #define "RECORD_GAP_MICROS_WARNING_THRESHOLD <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
-#define RECORD_GAP_MICROS_WARNING_THRESHOLD   20000
+#if !defined( RECORD_GAP_MICROS_WARNING_THRESHOLD )
+// To change this value, you simply can add a line #define "RECORD_GAP_MICROS_WARNING_THRESHOLD <My_new_value>" in your
+// ino file before the line "#include <IRremote.hpp>"
+#define RECORD_GAP_MICROS_WARNING_THRESHOLD 20000
 #endif
 
 /** Minimum gap between IR transmissions, in MICROS_PER_TICK */
-#define RECORD_GAP_TICKS    (RECORD_GAP_MICROS / MICROS_PER_TICK) // 221 for 1100
+#define RECORD_GAP_TICKS ( RECORD_GAP_MICROS / MICROS_PER_TICK ) // 221 for 1100
 
 /*
  * Activate this line if your receiver has an external output driver transistor / "inverted" output
@@ -167,10 +129,10 @@
 //#define IR_INPUT_IS_ACTIVE_HIGH
 #ifdef IR_INPUT_IS_ACTIVE_HIGH
 // IR detector output is active high
-#define INPUT_MARK   1 ///< Sensor output for a mark ("flash")
+#define INPUT_MARK 1 ///< Sensor output for a mark ("flash")
 #else
 // IR detector output is active low
-#define INPUT_MARK   0 ///< Sensor output for a mark ("flash")
+#define INPUT_MARK 0 ///< Sensor output for a mark ("flash")
 #endif
 /****************************************************
  *                     SENDING
@@ -178,8 +140,8 @@
 /**
  * Define to disable carrier PWM generation in software and use (restricted) hardware PWM.
  */
-#if defined(ESP32)
-#define SEND_PWM_BY_TIMER       // the best and default method for ESP32
+#if defined( ESP32 )
+#define SEND_PWM_BY_TIMER // the best and default method for ESP32
 #else
 //#define SEND_PWM_BY_TIMER
 #endif
@@ -188,7 +150,7 @@
  * Define to use no carrier PWM, just simulate an active low receiver signal.
  */
 //#define USE_NO_SEND_PWM
-#if defined(SEND_PWM_BY_TIMER) && defined(USE_NO_SEND_PWM)
+#if defined( SEND_PWM_BY_TIMER ) && defined( USE_NO_SEND_PWM )
 #undef SEND_PWM_BY_TIMER // USE_NO_SEND_PWM overrides SEND_PWM_BY_TIMER
 #warning "SEND_PWM_BY_TIMER and USE_NO_SEND_PWM are both defined -> undefine SEND_PWM_BY_TIMER now!"
 #endif
@@ -203,13 +165,14 @@
  * It should be the time used for digitalWrite(sendPin, LOW) and the call to delayMicros()
  * Measured value for Nano @16MHz is around 3000, for Bluepill @72MHz is around 700, for Zero 3600
  */
-#if !defined(PULSE_CORRECTION_NANOS)
-#  if defined(F_CPU)
-// To change this value, you simply can add a line #define "PULSE_CORRECTION_NANOS <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
-#define PULSE_CORRECTION_NANOS (48000L / (F_CPU/MICROS_IN_ONE_SECOND)) // 3000 @16MHz, 666 @72MHz
-#  else
+#if !defined( PULSE_CORRECTION_NANOS )
+#if defined( F_CPU )
+// To change this value, you simply can add a line #define "PULSE_CORRECTION_NANOS <My_new_value>" in your ino file
+// before the line "#include <IRremote.hpp>"
+#define PULSE_CORRECTION_NANOS ( 48000L / ( F_CPU / MICROS_IN_ONE_SECOND ) ) // 3000 @16MHz, 666 @72MHz
+#else
 #define PULSE_CORRECTION_NANOS 600
-#  endif
+#endif
 #endif
 
 #include "IRremoteInt.h"
@@ -224,54 +187,11 @@
 /*
  * Include the sources of all decoders here to enable compilation with macro values set by user program.
  */
-#if defined(DECODE_BOSEWAVE)
-#include "ir_BoseWave.hpp"
-#endif
-#if defined(DECODE_DENON )       // Includes Sharp
-#include "ir_Denon.hpp"
-#endif
-#if defined(DECODE_DISTANCE)     // universal decoder for pulse width or pulse distance protocols - requires up to 750 bytes additional program space
 #include "ir_DistanceProtocol.hpp"
-#endif
-#if defined(DECODE_JVC)
-#include "ir_JVC.hpp"
-#endif
-#if defined(DECODE_KASEIKYO) || defined(DECODE_PANASONIC)
-#include "ir_Kaseikyo.hpp"
-#endif
-#if defined(DECODE_LEGO_PF)
-#include "ir_Lego.hpp"
-#endif
-#if defined(DECODE_LG)
-#include "ir_LG.hpp"
-#endif
-#if defined(DECODE_MAGIQUEST)
-#include "ir_MagiQuest.hpp"
-#endif
-#if defined(DECODE_NEC)          // Includes Apple and Onkyo
-#include "ir_NEC.hpp"
-#endif
-#if defined(DECODE_RC5) || defined(DECODE_RC6)
-#include "ir_RC5_RC6.hpp"
-#endif
-#if defined(DECODE_SAMSUNG)
-#include "ir_Samsung.hpp"
-#endif
-#if defined(DECODE_SONY)
-#include "ir_Sony.hpp"
-#endif
-#if defined(DECODE_WHYNTER)
-#include "ir_Whynter.hpp"
-#endif
-
-#include "ir_Pronto.hpp" // pronto is an universal decoder and encoder
-
-#include "ir_Dish.hpp" // contains only sendDISH(unsigned long data, int nbits)
-
 /**
  * Macros for legacy compatibility
  */
-#define RAWBUF  101  // Maximum length of raw duration buffer
+#define RAWBUF 101 // Maximum length of raw duration buffer
 #define REPEAT 0xFFFFFFFF
 #define USECPERTICK MICROS_PER_TICK
 #define MARK_EXCESS MARK_EXCESS_MICROS
@@ -279,4 +199,3 @@
 #endif // IRremote_hpp
 
 #pragma once
-

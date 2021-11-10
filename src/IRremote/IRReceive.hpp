@@ -261,126 +261,10 @@ bool IRrecv::decode() {
         return true;
     }
 
-#if defined(DECODE_NEC)
-    TRACE_PRINTLN("Attempting NEC decode");
-    if (decodeNEC()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_PANASONIC) || defined(DECODE_KASEIKYO)
-    TRACE_PRINTLN("Attempting Panasonic/Kaseikyo decode");
-    if (decodeKaseikyo()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_DENON)
-    TRACE_PRINTLN("Attempting Denon/Sharp decode");
-    if (decodeDenon()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_SONY)
-    TRACE_PRINTLN("Attempting Sony decode");
-    if (decodeSony()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_RC5)
-    TRACE_PRINTLN("Attempting RC5 decode");
-    if (decodeRC5()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_RC6)
-    TRACE_PRINTLN("Attempting RC6 decode");
-    if (decodeRC6()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_LG)
-    TRACE_PRINTLN("Attempting LG decode");
-    if (decodeLG()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_JVC)
-    TRACE_PRINTLN("Attempting JVC decode");
-    if (decodeJVC()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_SAMSUNG)
-    TRACE_PRINTLN("Attempting Samsung decode");
-    if (decodeSamsung()) {
-        return true;
-    }
-#endif
-    /*
-     * Start of the exotic protocols
-     */
-
-#if defined(DECODE_WHYNTER)
-    TRACE_PRINTLN("Attempting Whynter decode");
-    if (decodeWhynter()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_LEGO_PF)
-    TRACE_PRINTLN("Attempting Lego Power Functions");
-    if (decodeLegoPowerFunctions()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_BOSEWAVE)
-    TRACE_PRINTLN("Attempting Bosewave  decode");
-    if (decodeBoseWave()) {
-        return true;
-    }
-#endif
-
-#if defined(DECODE_MAGIQUEST)
-    TRACE_PRINTLN("Attempting MagiQuest decode");
-    if (decodeMagiQuest()) {
-        return true;
-    }
-#endif
-
-    /*
-     * Try the universal decoder for pulse width or pulse distance protocols
-     */
-#if defined(DECODE_DISTANCE)
-    TRACE_PRINTLN("Attempting universal Distance decode");
     if (decodeDistance()) {
         return true;
     }
-#endif
 
-    /*
-     * Last resort is the universal hash decode which always return true
-     */
-#if defined(DECODE_HASH)
-    TRACE_PRINTLN("Hash decode");
-    // decodeHash returns a hash on any input.
-    // Thus, it needs to be last in the list.
-    // If you add any decodes, add them before this.
-    if (decodeHash()) {
-        return true;
-    }
-#endif
-
-    /*
-     * Return true here, to let the loop decide to call resume or to print raw data.
-     */
     return true;
 }
 
@@ -550,10 +434,10 @@ bool IRrecv::decodePulseDistanceData(uint8_t aNumberOfBits, uint8_t aStartOffset
             // Check for variable length space indicating a 0 or 1
             if (matchSpace(*tRawBufPointer, aOneSpaceMicros)) {
                 tDecodedData |= tMask; // set the bit
-                TRACE_PRINT('1');
+                Serial.print('1');
             } else if (matchSpace(*tRawBufPointer, aZeroSpaceMicros)) {
                 // do not set the bit
-                TRACE_PRINT('0');
+                Serial.print('0');
             } else {
                 DEBUG_PRINT(F("Space="));
                 DEBUG_PRINT(*tRawBufPointer * MICROS_PER_TICK);

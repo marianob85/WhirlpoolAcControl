@@ -17,4 +17,6 @@ if __name__ == "__main__":
             break
         if output:
             pulseDistanceCoding.analise( output.strip().decode('utf-8') )
+            
     process.poll()
+    

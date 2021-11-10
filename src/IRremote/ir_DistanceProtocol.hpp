@@ -250,16 +250,6 @@ bool IRrecv::decodeDistance() {
         decodedIRData.extra = (tMarkTicksShort << 8) | tMarkTicksLong;
         decodedIRData.protocol = PULSE_WIDTH;
     } else {
-//        // check if last bit can be decoded as data or not, in this case take it as a stop bit
-//        if (decodePulseDistanceData(1, decodedIRData.rawDataPtr->rawlen - 3, tMarkTicksShort * MICROS_PER_TICK,
-//                tSpaceTicksLong * MICROS_PER_TICK, tSpaceTicksShort * MICROS_PER_TICK, DISTANCE_DO_MSB_DECODING)) {
-//            Serial.print(F("tNumberOfBits++ "));
-//            tNumberOfBits++;
-//        }
-
-        /*
-         * Decode in 32 bit chunks
-         */
         for (uint8_t i = 0; i <= tNumberOfAdditionalLong; ++i) {
             uint8_t tNumberOfBitsForOneDecode = tNumberOfBits;
             if (tNumberOfBitsForOneDecode > 32) {

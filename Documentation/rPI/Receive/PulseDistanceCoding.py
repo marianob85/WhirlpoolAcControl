@@ -1,6 +1,6 @@
 import re
 import sys
-
+import datetime
 
 from itertools import islice
 
@@ -56,11 +56,14 @@ class PulseDistanceCoding:
     def analise(self, line):
         spaceData = re.match(r'space (\d+)', line)
         pulseData = re.match(r'pulse (\d+)', line)
-
+        timeout = re.match(r'timeout', line)
         if spaceData:
             space = int(spaceData.group(1))
         elif pulseData:
             self.pulse = int(pulseData.group(1))
+            return
+        elif timeout:
+            self.invalidate(True)
             return
         else:
             self.invalidate(False)
@@ -74,6 +77,9 @@ class PulseDistanceCoding:
 
         if self.isHeader( [self.pulse,space] ):
             return
+
+        if self.count == 0:
+            print(datetime.datetime.now())
 
         if self.getBit([self.pulse,space]):
             self.receiveData.append(1)

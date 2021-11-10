@@ -1,6 +1,3 @@
-#define IR_RECEIVE_PIN 7 // To be compatible with interrupt example, pin 2 is chosen here.
-#define IR_SEND_PIN 2
-
 #define AC_KHZ 38
 #define AC_UNIT 560						// 21.28 periods of 38 kHz
 #define AC_HEADER_MARK ( 16 * AC_UNIT ) // 9000
@@ -12,6 +9,7 @@
 
 #define DELAY_AFTER_SEND 2000
 
+#define SEND_PWM_BY_TIMER
 #include "src/IRremote/IRremoteInt.h"
 #include "src/IRremote/IRremote.h"
 
@@ -20,14 +18,15 @@
 void setup()
 {
 	Serial.begin( 115200 );
-	IrReceiver.begin( IR_RECEIVE_PIN, false );
-	IrSender.begin( IR_SEND_PIN, true );
+	IrSender.begin( true );
 	IrSender.enableIROut( AC_KHZ );
+	Serial.println( "Started" );
 }
-
 
 void send()
 {
+	// IrSender.enableIROut( AC_KHZ );
+
 	// Header
 	IrSender.mark( AC_HEADER_MARK );
 	IrSender.space( AC_HEADER_SPACE );
@@ -41,28 +40,16 @@ void send()
 	IrSender.sendPulseDistanceWidthData(
 		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, b, 32, PROTOCOL_IS_LSB_FIRST, false );
 	IrSender.sendPulseDistanceWidthData(
-		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, c, 4, PROTOCOL_IS_LSB_FIRST, false );
+		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, c, 4, PROTOCOL_IS_LSB_FIRST, true );
 	delay( DELAY_AFTER_SEND );
 
 	Serial.println( "Sended" );
 }
 
+bool send_test = true;
 
 void loop()
 {
-	// send();
-	// return;
-	if( IrReceiver.decode() )
-	{
-		Serial.println( "" );
-		// Serial.println( "Received" );
+	send();
 
-		// IrReceiver.printIRResultRawFormatted( &Serial );
-
-		/*
-		 * !!!Important!!! Enable receiving of the next value,
-		 * since receiving has stopped after the end of the current received data packet.
-		 */
-		IrReceiver.resume();
-	}
 }
