@@ -2,17 +2,17 @@ import collections
 
 # Example: 10001000 00011110 11100010 01011000 11001101 11001010 00100000 00000101 1010
 # Byte 0:
-#   Bit: 5-7 - Mode
+#   Bit: 0-3 - Mode
 #     0: 6th sense
 #     1: Cool
 #     2: Dry
 #     3: Fan
 #     4: Heat
 #   Bit: 4: Power
-#   Bit: 2-3 - Fan
+#   Bit: 5-6 - Fan
 #      0: Auto 1:1 2:2 3:3
-#   Bit: 1 - Swing
-#   Bit: 0 - Sleep
+#   Bit: 7 - Swing
+#   Bit: 8 - Sleep
 # Byte 1:
 #   Bit: 0-3 - Temperature 0: 16deg, 1: 17deg  etc..
 #   Bit: 4-7 - 4 second interval - 60sec/15

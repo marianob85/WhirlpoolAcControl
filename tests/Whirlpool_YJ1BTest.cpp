@@ -35,10 +35,10 @@ using namespace std;
 
 TEST_CASE( "Default value" )
 {
-	auto a = sizeof( WhirlpoolYJ1BData::Bit2 );
+	auto data = WhirlpoolYJ1BData();
 
-	auto t = WhirlpoolYJ1BData();
-	auto s = sizeof( WhirlpoolYJ1BData );
+	
+
 
 	//t.bit0.raw = 0x1;
 
@@ -46,7 +46,7 @@ TEST_CASE( "Default value" )
 
 	// constexpr uint8_t size = 24;
 	// const WhirlpoolYJ1B< size > test;
-	// REQUIRE( Compare< size >( test.data() )( { 0, 0, 0 }, size ) );
+	REQUIRE( Compare< size >( test.data() )( { 0, 0, 0 }, size ) );
 }
 
 TEST_CASE( "Custom value" )

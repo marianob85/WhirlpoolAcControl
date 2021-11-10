@@ -36,9 +36,9 @@ union WhirlpoolYJ1BData
 		uint8_t raw;
 		struct
 		{
-			Mode mode : 3;
+			uint8_t mode : 3;
 			uint8_t power : 1;
-			Fan fan : 2;
+			uint8_t fan : 2;
 			uint8_t swing : 1;
 			uint8_t sleep : 1;
 		};
@@ -60,7 +60,7 @@ union WhirlpoolYJ1BData
 		struct
 		{
 			uint8_t clock_Minutes : 6;
-			AM_PM clock_AM_PM : 1;
+			uint8_t clock_AM_PM : 1;
 			uint8_t unknown : 1;
 		};
 	};
@@ -81,7 +81,7 @@ union WhirlpoolYJ1BData
 		struct
 		{
 			uint8_t timer_Enable_Minutes_MSB : 2;
-			AM_PM timer_Enable_AM_PM : 1;
+			uint8_t timer_Enable_AM_PM : 1;
 			uint8_t timer_Enable_ON_OFF : 1;
 			uint8_t timer_Enable_Hours : 4;
 		};
@@ -93,7 +93,7 @@ union WhirlpoolYJ1BData
 		struct
 		{
 			uint8_t timer_Disable_Minutes_LSB : 6;
-			AM_PM timer_Disable_AM_PM : 1;
+			uint8_t timer_Disable_AM_PM : 1;
 			uint8_t timer_Disable_ON_OFF : 1;
 		};
 	};
@@ -128,15 +128,20 @@ union WhirlpoolYJ1BData
 class WhirlpoolYJ1B
 {
 public:
-public:
 	WhirlpoolYJ1B() = default;
 	explicit WhirlpoolYJ1B( const WhirlpoolYJ1BData& data );
 	virtual ~WhirlpoolYJ1B() = default;
 
 	WhirlpoolYJ1BData& data();
 
+	void setMode( Mode mode );
+	void setPower( bool power );
+	void setFan( Fan fan );
+	void setSwitg( bool swing );
+	void setSleep( bool sleep );
+
 #ifdef WhirlpoolYJ1B_TRACE
-	void print();
+	void WhirlpoolYJ1B::print();
 #endif
 
 private:
