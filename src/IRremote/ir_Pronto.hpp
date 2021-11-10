@@ -1,5 +1,5 @@
 /*
- * @file irPronto.cpp
+ * @file ir_Pronto.hpp
  * @brief In this file, the functions IRrecv::compensateAndPrintPronto and IRsend::sendPronto are defined.
  *
  * See http://www.harctoolbox.org/Glossary.html#ProntoSemantics
@@ -31,6 +31,8 @@
  *
  ************************************************************************************
  */
+#ifndef IR_PRONTO_HPP
+#define IR_PRONTO_HPP
 
 // The first number, here 0000, denotes the type of the signal. 0000 denotes a raw IR signal with modulation,
 // The second number, here 006C, denotes a frequency code
@@ -53,7 +55,6 @@
 
 //! @cond
 // DO NOT EXPORT from this file
-static const uint16_t MICROSECONDS_T_MAX = 0xFFFFU;
 static const uint16_t learnedToken = 0x0000U;
 static const uint16_t learnedNonModulatedToken = 0x0100U;
 static const unsigned int bitsInHexadecimal = 4U;
@@ -103,7 +104,7 @@ void IRsend::sendPronto(const uint16_t *data, unsigned int length, uint_fast8_t 
     uint16_t durations[intros + repeats];
     for (unsigned int i = 0; i < intros + repeats; i++) {
         uint32_t duration = ((uint32_t) data[i + numbersInPreamble]) * timebase;
-        durations[i] = (unsigned int) ((duration <= MICROSECONDS_T_MAX) ? duration : MICROSECONDS_T_MAX);
+        durations[i] = (unsigned int) ((duration <= __UINT16_MAX__) ? duration : __UINT16_MAX__);
     }
 
     /*
@@ -123,12 +124,12 @@ void IRsend::sendPronto(const uint16_t *data, unsigned int length, uint_fast8_t 
      * Now send the trailing space/gap of the intro and all the repeats
      */
     if (intros >= 2) {
-        delay(durations[intros - 1] / 1000U); // equivalent to space(durations[intros - 1]); but allow bigger values for the gap
+        delay(durations[intros - 1] / MICROS_IN_ONE_MILLI); // equivalent to space(durations[intros - 1]); but allow bigger values for the gap
     }
     for (unsigned int i = 0; i < aNumberOfRepeats; i++) {
         sendRaw(durations + intros, repeats - 1, khz);
         if ((i + 1) < aNumberOfRepeats) { // skip last trailing space/gap, see above
-            delay(durations[intros + repeats - 1] / 1000U);
+            delay(durations[intros + repeats - 1] / MICROS_IN_ONE_MILLI);
         }
     }
 }
@@ -234,7 +235,7 @@ static void dumpDuration(Print *aSerial, uint32_t duration, uint16_t timebase) {
  * Compensate received values by MARK_EXCESS_MICROS, like it is done for decoding!
  */
 static void compensateAndDumpSequence(Print *aSerial, const volatile uint16_t *data, size_t length, uint16_t timebase) {
-    for (uint_fast8_t i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         uint32_t tDuration = data[i] * MICROS_PER_TICK;
         if (i & 1) {
             // Mark
@@ -251,19 +252,20 @@ static void compensateAndDumpSequence(Print *aSerial, const volatile uint16_t *d
 
 /**
  * Print the result (second argument) as Pronto Hex on the Print supplied as argument.
+ * Used in the ReceiveDump example.
  * @param aSerial The Print object on which to write, for Arduino you can use &Serial.
  * @param aFrequencyHertz Modulation frequency in Hz. Often 38000Hz.
  */
 void IRrecv::compensateAndPrintIRResultAsPronto(Print *aSerial, unsigned int aFrequencyHertz) {
     aSerial->println(F("Pronto Hex as string"));
-    aSerial->print(F("char ProntoData[] = \""));
+    aSerial->print(F("char prontoData[] = \""));
     dumpNumber(aSerial, aFrequencyHertz > 0 ? learnedToken : learnedNonModulatedToken);
     dumpNumber(aSerial, toFrequencyCode(aFrequencyHertz));
     dumpNumber(aSerial, (decodedIRData.rawDataPtr->rawlen + 1) / 2);
     dumpNumber(aSerial, 0);
     unsigned int timebase = toTimebase(aFrequencyHertz);
     compensateAndDumpSequence(aSerial, &decodedIRData.rawDataPtr->rawbuf[1], decodedIRData.rawDataPtr->rawlen - 1, timebase); // skip leading space
-    aSerial->println("\"");
+    aSerial->println("\";");
 }
 
 /*
@@ -301,7 +303,7 @@ static size_t compensateAndDumpSequence(String *aString, const volatile uint16_t
 
     size_t size = 0;
 
-    for (uint_fast8_t i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         uint32_t tDuration = data[i] * MICROS_PER_TICK;
         if (i & 1) {
             // Mark
@@ -338,3 +340,5 @@ size_t IRrecv::compensateAndStorePronto(String *aString, unsigned int frequency)
 }
 
 /** @}*/
+#endif
+#pragma once

@@ -31,7 +31,7 @@
  */
 #ifndef IR_FEEDBACK_LED_HPP
 #define IR_FEEDBACK_LED_HPP
-#include "private/IRFeedbackLEDDefs.h"
+#include "IRFeedbackLEDDefs.h"
 
 /** \addtogroup FeedbackLEDFunctions Feedback LED functions
  * @{
@@ -136,4 +136,3 @@ void setBlinkPin(uint8_t aBlinkPin) {
 
 #endif // #ifndef IR_FEEDBACK_LED_HPP
 #pragma once
-

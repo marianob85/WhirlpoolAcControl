@@ -1,5 +1,5 @@
 /*
- * ir_DistanceProtocol.cpp
+ * ir_DistanceProtocol.hpp
  *
  * This decoder tries to decode a pulse width or pulse distance protocol.
  * 1. Analyze all space and mark length
@@ -39,6 +39,9 @@
  *
  ************************************************************************************
  */
+#ifndef IR_DISTANCE_HPP
+#define IR_DISTANCE_HPP
+
 #include <Arduino.h>
 
 // accept durations up to 50 * 50 (MICROS_PER_TICK) 2500 microseconds
@@ -48,7 +51,7 @@
 #define DISTANCE_DO_MSB_DECODING PROTOCOL_IS_LSB_FIRST // this results in the same decodedRawData as e.g. the NEC and Kaseikyo/Panasonic decoder
 //#define DISTANCE_DO_MSB_DECODING PROTOCOL_IS_MSB_FIRST // this resembles the JVC, Denon
 
-#define INFO // Deactivate this to save program space and suppress info output.
+//#define INFO // Activate this to save program space and suppress info output.
 //#define DEBUG // Activate this for lots of lovely debug output from this decoder.
 #include "IRremoteInt.h" // evaluates the DEBUG for DEBUG_PRINT
 //#include "LongUnion.h"
@@ -218,7 +221,7 @@ bool IRrecv::decodeDistance() {
                 return false;
             }
             if (i == 0) {
-                // Print protocol timing only once
+                // Print protocol timing and length only once
                 INFO_PRINTLN();
                 INFO_PRINT(F("PULSE_WIDTH:"));
                 INFO_PRINT(F(" HeaderMarkMicros="));
@@ -230,16 +233,18 @@ bool IRrecv::decodeDistance() {
                 INFO_PRINT(F(" ZeroMarkMicros="));
                 INFO_PRINT(tMarkTicksShort * MICROS_PER_TICK);
                 INFO_PRINT(F(" SpaceMicros="));
-                INFO_PRINTLN(tSpaceTicksShort * MICROS_PER_TICK);
+                INFO_PRINT(tSpaceTicksShort * MICROS_PER_TICK);
+                INFO_PRINT(F(" NumberOfBits="));
+                INFO_PRINT(decodedIRData.numberOfBits);
+                INFO_PRINT(F(" DecodedRawData:"));
+
             }
-            if (tNumberOfAdditionalLong > 0) {
-                // print only if we have more than 32 bits for decode
-                INFO_PRINT(F(" 0x"));
-                Serial.print(decodedIRData.decodedRawData, HEX);
-                tStartIndex += 64;
-                tNumberOfBits -= 32;
-            }
+            INFO_PRINT(F(" 0x"));
+            INFO_PRINT(decodedIRData.decodedRawData, HEX);
+            tStartIndex += 64;
+            tNumberOfBits -= 32;
         }
+        INFO_PRINTLN();
 
         // Store ticks used for decoding in extra
         decodedIRData.extra = (tMarkTicksShort << 8) | tMarkTicksLong;
@@ -252,6 +257,9 @@ bool IRrecv::decodeDistance() {
 //            tNumberOfBits++;
 //        }
 
+        /*
+         * Decode in 32 bit chunks
+         */
         for (uint8_t i = 0; i <= tNumberOfAdditionalLong; ++i) {
             uint8_t tNumberOfBitsForOneDecode = tNumberOfBits;
             if (tNumberOfBitsForOneDecode > 32) {
@@ -276,18 +284,17 @@ bool IRrecv::decodeDistance() {
                     INFO_PRINT(F(" OneSpaceMicros="));
                     INFO_PRINT(tSpaceTicksLong * MICROS_PER_TICK);
                     INFO_PRINT(F(" ZeroSpaceMicros="));
-                    INFO_PRINTLN(tSpaceTicksShort * MICROS_PER_TICK);
+                    INFO_PRINT(tSpaceTicksShort * MICROS_PER_TICK);
+                    INFO_PRINT(F(" NumberOfBits="));
+                    INFO_PRINT(decodedIRData.numberOfBits);
+                    INFO_PRINT(F(" DecodedRawData:"));
                 }
-                if (tNumberOfAdditionalLong > 0) {
-                    // print only if we have more than 32 bits for decode
-                    INFO_PRINT(F(" 0x"));
-                    Serial.print(" ( ");
-                    Serial.print(decodedIRData.decodedRawData, BIN);
-                    Serial.print(" ) ");
-                    tStartIndex += 64;
-                    tNumberOfBits -= 32;
-                }
+                INFO_PRINT(F(" 0x"));
+                INFO_PRINT(decodedIRData.decodedRawData, HEX);
+                tStartIndex += 64;
+                tNumberOfBits -= 32;
             }
+            INFO_PRINTLN();
         }
 
         // Store ticks used for decoding in extra
@@ -303,3 +310,5 @@ bool IRrecv::decodeDistance() {
 }
 
 /** @}*/
+#endif
+#pragma once

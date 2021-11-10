@@ -1,5 +1,5 @@
 /*
- * ir_Lego.cpp
+ * ir_Lego.hpp
  *
  *  Contains functions for receiving and sending Lego Power Functions IR Protocol
  *
@@ -29,6 +29,9 @@
  *
  ************************************************************************************
  */
+#ifndef IR_LEGO_HPP
+#define IR_LEGO_HPP
+
 #include <Arduino.h>
 
 //#define DEBUG // Activate this for lots of lovely debug output from this decoder.
@@ -117,7 +120,7 @@ void IRsend::sendLegoPowerFunctions(uint16_t aRawData, uint8_t aChannel, bool aD
         tNumberOfCommands = 5;
     }
 // required for repeat timing, see http://www.hackvandedam.nl/blog/?page_id=559
-    uint8_t tRepeatPeriod = (110 - (LEGO_AVERAGE_DURATION / 1000)) + (aChannel * 40); // from 100 to 220
+    uint8_t tRepeatPeriod = (110 - (LEGO_AVERAGE_DURATION / MICROS_IN_ONE_MILLI)) + (aChannel * 40); // from 100 to 220
 
     while (tNumberOfCommands > 0) {
 
@@ -222,3 +225,5 @@ bool IRrecv::decodeLegoPowerFunctions() {
 }
 
 /** @}*/
+#endif
+#pragma once

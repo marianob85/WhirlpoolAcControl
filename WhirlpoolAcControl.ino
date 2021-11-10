@@ -10,8 +10,10 @@
 #define AC_ONE_SPACE ( 3 * AC_UNIT ) // 1690
 #define AC_ZERO_SPACE AC_UNIT
 
-#include "IRremoteInt.h"
-#include <IRremote.h>
+#define DELAY_AFTER_SEND 2000
+
+#include "src/IRremote/IRremoteInt.h"
+#include "src/IRremote/IRremote.h"
 
 // PULSE_DISTANCE: HeaderMarkMicros=8950 HeaderSpaceMicros=4400 MarkMicros=600 OneSpaceMicros=1650 ZeroSpaceMicros=550
 // 68 bits LSB first
@@ -19,12 +21,11 @@ void setup()
 {
 	Serial.begin( 115200 );
 	IrReceiver.begin( IR_RECEIVE_PIN, false );
-	//IrReceiver.begin( IR_RECEIVE_PIN, false );
-	// IrSender.begin( IR_SEND_PIN, true );
-	// IrSender.enableIROut( AC_KHZ );
+	IrSender.begin( IR_SEND_PIN, true );
+	IrSender.enableIROut( AC_KHZ );
 }
 
-/*
+
 void send()
 {
 	// Header
@@ -45,7 +46,7 @@ void send()
 
 	Serial.println( "Sended" );
 }
-*/
+
 
 void loop()
 {
