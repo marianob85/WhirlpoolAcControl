@@ -8,25 +8,25 @@
 
 enum class Fan : uint8_t
 {
-	Auto,
-	V1,
-	V2,
-	V3
+	Auto = 0,
+	V1	 = 1,
+	V2	 = 2,
+	V3	 = 3
 };
 
 enum class Mode : uint8_t
 {
-	Sense_6th,
-	Cool,
-	Dry,
-	Fan,
-	Heat
+	Sense_6th = 0,
+	Cool	  = 1,
+	Dry		  = 2,
+	Fan		  = 3,
+	Heat	  = 4
 };
 
-enum class AM_PM : uint8_t
+enum class AM_PM : bool
 {
-	AM,
-	PM
+	AM = false,
+	PM = true
 };
 
 union WhirlpoolYJ1BData
@@ -34,7 +34,7 @@ union WhirlpoolYJ1BData
 	union Bit0
 	{
 		uint8_t raw;
-		struct
+		struct SBit0
 		{
 			uint8_t mode : 3;
 			uint8_t power : 1;
@@ -47,7 +47,7 @@ union WhirlpoolYJ1BData
 	union Bit1
 	{
 		uint8_t raw;
-		struct
+		struct SBit1
 		{
 			uint8_t temperature : 4;   // Temperature 0: 16deg, 1: 17deg  etc..
 			uint8_t clock_Seconds : 4; // 4 second interval - 60sec/15
@@ -57,7 +57,7 @@ union WhirlpoolYJ1BData
 	union Bit2
 	{
 		uint8_t raw;
-		struct
+		struct SBit2
 		{
 			uint8_t clock_Minutes : 6;
 			uint8_t clock_AM_PM : 1;
@@ -68,7 +68,7 @@ union WhirlpoolYJ1BData
 	union Bit3
 	{
 		uint8_t raw;
-		struct
+		struct SBit3
 		{
 			uint8_t clock_Hours : 4;
 			uint8_t timer_Enable_Minutes_LSB : 4;
@@ -78,7 +78,7 @@ union WhirlpoolYJ1BData
 	union Bit4
 	{
 		uint8_t raw;
-		struct
+		struct SBit4
 		{
 			uint8_t timer_Enable_Minutes_MSB : 2;
 			uint8_t timer_Enable_AM_PM : 1;
@@ -90,7 +90,7 @@ union WhirlpoolYJ1BData
 	union Bit5
 	{
 		uint8_t raw;
-		struct
+		struct SBit5
 		{
 			uint8_t timer_Disable_Minutes_LSB : 6;
 			uint8_t timer_Disable_AM_PM : 1;
@@ -101,7 +101,7 @@ union WhirlpoolYJ1BData
 	union Bit6
 	{
 		uint8_t raw;
-		struct
+		struct SBit6
 		{
 			uint8_t timer_Disable_Hours : 4;
 			uint8_t jet : 1;
@@ -110,19 +110,19 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	// Bit 7,8,9 -> Unknown
+	// Bit 7,8 -> Unknown
 
 	uint8_t raw[ 9 ];
-	struct
+	struct Bits
 	{
-		Bit0 bit0;
-		Bit1 bit1;
-		Bit2 bit2;
-		Bit3 bit3;
-		Bit4 bit4;
-		Bit5 bit5;
-		Bit6 bit6;
-	};
+		Bit0::SBit0 bit0;
+		Bit1::SBit1 bit1;
+		Bit2::SBit2 bit2;
+		Bit3::SBit3 bit3;
+		Bit4::SBit4 bit4;
+		Bit5::SBit5 bit5;
+		Bit6::SBit6 bit6;
+	} bits;
 };
 
 class WhirlpoolYJ1B
@@ -139,8 +139,11 @@ public:
 	void setFan( Fan fan );
 	void setSwitg( bool swing );
 	void setSleep( bool sleep );
+	void setJet( bool jet );
+	void setLight( bool light );
+	void setTemperature( uint8_t temp );
 
-#ifdef WhirlpoolYJ1B_TRACE
+#ifdef TRACE
 	void WhirlpoolYJ1B::print();
 #endif
 

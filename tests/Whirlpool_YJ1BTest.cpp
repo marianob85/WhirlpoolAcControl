@@ -3,66 +3,77 @@
 
 using namespace std;
 
-// template< int N >
-// class Compare
-// {
-// public:
-// 	Compare( const typename WhirlpoolYJ1B< N >::Data& data ) : m_data{ data } {};
-
-// 	bool operator()( std::initializer_list< uint8_t > data, uint16_t size ) const
-// 	{
-// 		const vector< uint8_t > vdata( data );
-// 		if( vdata.size() != m_data.storageSize )
-// 			return false;
-// 		if( size != m_data.dataSize )
-// 			return false;
-
-// 		for( unsigned i = 0; i < m_data.storageSize; ++i )
-// 		{
-// 			uint8_t mask = 0xFF;
-// 			if( const auto bits = m_data.dataSize / ( ( i + 1 ) * 8 ); bits == 0 )
-// 				mask = ~( mask << ( 8 - ( m_data.dataSize % 8 ) ) );
-// 			if( ( vdata.at( i ) & mask ) != m_data.data[ i ] )
-// 				return false;
-// 		}
-
-// 		return true;
-// 	}
-
-// private:
-// 	const typename WhirlpoolYJ1B< N >::Data& m_data{};
-// };
-
 TEST_CASE( "Default value" )
 {
 	auto data = WhirlpoolYJ1BData();
 
-	
-
-
-	//t.bit0.raw = 0x1;
-
-	//t.bit0.Power = 0x1;
-
-	// constexpr uint8_t size = 24;
-	// const WhirlpoolYJ1B< size > test;
-	//REQUIRE( Compare< size >( test.data() )( { 0, 0, 0 }, size ) );
+	const vector< uint8_t > expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	REQUIRE( std::equal( std::begin( data.raw ), std::end( data.raw ), expected.begin() ) );
 }
 
-TEST_CASE( "Custom value" )
+TEST_CASE( "Test Sleep" )
 {
-	// SECTION( "Fitted data" )
-	// {
-	// 	constexpr uint8_t size = 24;
-	// 	const WhirlpoolYJ1B< size >::Data data{ 1, 2, 3 };
-	// 	const WhirlpoolYJ1B< size > test( data );
-	// 	REQUIRE( Compare< size >( test.data() )( { 1, 2, 3 }, size ) );
-	// }
-	// SECTION( "Un-fitted data" )
-	// {
-	// 	constexpr uint8_t size = 22;
-	// 	const WhirlpoolYJ1B< size >::Data data{ 1, 2, 3 };
-	// 	const WhirlpoolYJ1B< size > test( data );
-	// 	REQUIRE( Compare< size >( test.data() )( { 1, 2, 0xFF }, size ) );
-	// }
+	auto data = WhirlpoolYJ1B();
+	data.setSleep( true );
+	const vector< uint8_t > expected = { 0b10000000, 0, 0, 0, 0, 0, 0, 0, 0 };
+	REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+}
+
+TEST_CASE( "Test Mode" )
+{
+	auto data = WhirlpoolYJ1B();
+	data.setMode( Mode::Sense_6th );
+	const vector< uint8_t > expected = { 0b00000000, 0, 0, 0, 0, 0, 0, 0, 0 };
+	REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+	data.setMode( Mode::Heat );
+	const vector< uint8_t > expectedA = { 0b00000100, 0, 0, 0, 0, 0, 0, 0, 0 };
+	REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expectedA.begin() ) );
+}
+
+TEST_CASE( "Test Temperature" )
+{
+	auto data = WhirlpoolYJ1B();
+
+	const vector< uint8_t > expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+
+	SECTION( "Under min" )
+	{
+		data.setTemperature( 0 );
+
+		const vector< uint8_t > expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+	}
+
+	SECTION( "Min" )
+	{
+		data.setTemperature( 16 );
+
+		const vector< uint8_t > expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+	}
+
+	SECTION( "Middle ( 20 )" )
+	{
+		data.setTemperature( 20 );
+
+		const vector< uint8_t > expected = { 0, 0b00000100, 0, 0, 0, 0, 0, 0, 0 };
+		REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+	}
+
+	SECTION( "Max" )
+	{
+		data.setTemperature( 30 );
+
+		const vector< uint8_t > expected = { 0, 0b00001110, 0, 0, 0, 0, 0, 0, 0 };
+		REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+	}
+
+	SECTION( "Over Max" )
+	{
+		data.setTemperature( 30 );
+
+		const vector< uint8_t > expected = { 0, 0b00001110, 0, 0, 0, 0, 0, 0, 0 };
+		REQUIRE( std::equal( std::begin( data.data().raw ), std::end( data.data().raw ), expected.begin() ) );
+	}
 }
