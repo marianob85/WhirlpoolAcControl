@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #else
 #include <cstdint>
+#include <iostream>
 #endif
 
 enum class Fan : uint8_t
@@ -135,16 +136,127 @@ public:
 	WhirlpoolYJ1BData& data();
 
 	void setMode( Mode mode );
+	Mode getMode() const;
 	void setPower( bool power );
+	bool getPower() const;
 	void setFan( Fan fan );
+	Fan getFan() const;
 	void setSwitg( bool swing );
+	bool getSwitg() const;
 	void setSleep( bool sleep );
+	bool getSleep() const;
 	void setJet( bool jet );
+	bool getJet() const;
 	void setLight( bool light );
+	bool getLight() const;
+	void setTemperatureRaw( uint8_t temp );
+	uint8_t getTemperatureRaw() const;
+
 	void setTemperature( uint8_t temp );
+	uint8_t getTemperature() const;
 
 #ifdef TRACE
-	void WhirlpoolYJ1B::print();
+	void printDebug()
+	{
+		print( "Raw: " );
+		for( auto data : m_data.raw )
+		{
+			printBin( data );
+			print( " " );
+		}
+
+		println( "" );
+
+		auto printBool = [ & ]( const char* text, const uint8_t data )
+		{
+			const char* on	= "ON";
+			const char* off = "OFF";
+			print( text );
+			println( data ? on : off );
+		};
+
+		print( "Mode: " );
+		switch( Mode( m_data.bits.bit0.mode ) )
+		{
+		case Mode::Sense_6th:
+			println( "6th Sense" );
+			break;
+		case Mode::Cool:
+			println( "Cool" );
+			break;
+		case Mode::Dry:
+			println( "Dry" );
+			break;
+		case Mode::Fan:
+			println( "Fan" );
+			break;
+		case Mode::Heat:
+			println( "Heat" );
+			break;
+		default:
+			println( "Unknown" );
+			break;
+		};
+
+		printBool( "Power: ", m_data.bits.bit0.power );
+
+		print( "Fan:" );
+		switch( Fan( m_data.bits.bit0.fan ) )
+		{
+		case Fan::Auto:
+			println( "Auto" );
+			break;
+		case Fan::V1:
+			println( "V1" );
+			break;
+		case Fan::V2:
+			println( "V2" );
+			break;
+		case Fan::V3:
+			println( "V3" );
+			break;
+		default:
+			println( "Unknown" );
+			break;
+		};
+
+		printBool( "Swing: ", m_data.bits.bit0.swing );
+		printBool( "Sleep: ", m_data.bits.bit0.sleep );
+		printBool( "Light: ", m_data.bits.bit6.light );
+		printBool( "Jet: ", m_data.bits.bit6.jet );
+
+		print( "Temperature: " );
+		println( m_data.bits.bit1.temperature + 16 );
+	}
+
+#ifdef ARDUINO
+	template< typename T >
+	void println( const T text )
+	{
+		Serial.println( text );
+	}
+	template< typename T >
+	void print( const T text )
+	{
+		Serial.print( text );
+	}
+	void printBin( uint8_t val )
+	{
+		Serial.print( val, BIN );
+	}
+#else
+	template< typename T >
+	void println( const T text )
+	{
+		std::cout << text << std::endl;
+	}
+	template< typename T >
+	void print( const T text )
+	{
+		std::cout << text;
+	}
+	void printBin( uint8_t val ) {}
+#endif
 #endif
 
 private:

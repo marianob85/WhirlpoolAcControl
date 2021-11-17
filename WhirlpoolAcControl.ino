@@ -10,16 +10,19 @@
 #define DELAY_AFTER_SEND 2000
 
 #define SEND_PWM_BY_TIMER
+#define TRACE
+
 #include "src/IRremote/IRremote.hpp"
+#include "src/Whirlpool_YJ1B.hpp"
 
 // PULSE_DISTANCE: HeaderMarkMicros=8950 HeaderSpaceMicros=4400 MarkMicros=600 OneSpaceMicros=1650 ZeroSpaceMicros=550
 // 68 bits LSB first
 void setup()
 {
 	Serial.begin( 115200 );
+	Serial.println( "Started" );
 	IrSender.begin( true );
 	IrSender.enableIROut( AC_KHZ );
-	Serial.println( "Started" );
 }
 
 void send()
@@ -40,9 +43,21 @@ void send()
 	Serial.println( "Sended" );
 }
 
-bool send_test = true;
+WhirlpoolYJ1B whirpool;
 
 void loop()
 {
-	send();
+	if( Serial.available() > 0 )
+	{
+		const auto incomingByte = Serial.read();
+		switch( incomingByte )
+		{
+		case '1':
+			whirpool.setMode( static_cast< Mode >( ( static_cast< uint8_t >( whirpool.getMode() ) + 1 )
+												   % static_cast< uint8_t >( Mode::Heat ) ) );
+			whirpool.printDebug();
+		}
+	}
+
+	//  send();
 }

@@ -5,6 +5,8 @@ project (Whirlpool_YJ1B LANGUAGES CXX )
 
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
 
+add_compile_definitions(TRACE)
+
 add_subdirectory( external )
 add_subdirectory( src )
 enable_testing()
