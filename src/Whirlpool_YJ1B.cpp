@@ -24,7 +24,7 @@ WhirlpoolYJ1BData& WhirlpoolYJ1B::data()
 	return m_data;
 }
 
-void WhirlpoolYJ1B::setMode( Mode mode )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setMode( Mode mode )
 {
 	const auto data = tounderlying( mode );
 	if( data > 4 )
@@ -37,9 +37,10 @@ Mode WhirlpoolYJ1B::getMode() const
 	return static_cast< Mode >( m_data.bits.bit0.mode );
 }
 
-void WhirlpoolYJ1B::setPower( bool power )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setPower( bool power )
 {
 	m_data.bits.bit0.power = power;
+	return *this;
 }
 
 bool WhirlpoolYJ1B::getPower() const
@@ -47,9 +48,10 @@ bool WhirlpoolYJ1B::getPower() const
 	return m_data.bits.bit0.power;
 }
 
-void WhirlpoolYJ1B::setFan( Fan fan )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setFan( Fan fan )
 {
 	m_data.bits.bit0.fan = tounderlying( fan );
+	return *this;
 }
 
 Fan WhirlpoolYJ1B::getFan() const
@@ -57,19 +59,21 @@ Fan WhirlpoolYJ1B::getFan() const
 	return static_cast< Fan >( m_data.bits.bit0.fan );
 }
 
-void WhirlpoolYJ1B::setSwitg( bool swing )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setSwing( bool swing )
 {
 	m_data.bits.bit0.swing = swing;
+	return *this;
 }
 
-bool WhirlpoolYJ1B::getSwitg() const
+bool WhirlpoolYJ1B::getSwing() const
 {
 	return m_data.bits.bit0.swing;
 }
 
-void WhirlpoolYJ1B::setSleep( bool sleep )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setSleep( bool sleep )
 {
 	m_data.bits.bit0.sleep = sleep;
+	return *this;
 }
 
 bool WhirlpoolYJ1B::getSleep() const
@@ -77,9 +81,10 @@ bool WhirlpoolYJ1B::getSleep() const
 	return m_data.bits.bit0.sleep;
 }
 
-void WhirlpoolYJ1B::setJet( bool jet )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setJet( bool jet )
 {
 	m_data.bits.bit6.jet = jet;
+	return *this;
 }
 
 bool WhirlpoolYJ1B::getJet() const
@@ -87,9 +92,10 @@ bool WhirlpoolYJ1B::getJet() const
 	return m_data.bits.bit6.jet;
 }
 
-void WhirlpoolYJ1B::setLight( bool light )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setLight( bool light )
 {
 	m_data.bits.bit6.light = light;
+	return *this;
 }
 
 bool WhirlpoolYJ1B::getLight() const
@@ -97,9 +103,10 @@ bool WhirlpoolYJ1B::getLight() const
 	return m_data.bits.bit6.light;
 }
 
-void WhirlpoolYJ1B::setTemperatureRaw( uint8_t temp )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setTemperatureRaw( uint8_t temp )
 {
 	m_data.bits.bit1.temperature = temp > 14 ? 14 : temp;
+	return *this;
 }
 
 uint8_t WhirlpoolYJ1B::getTemperatureRaw() const
@@ -107,7 +114,7 @@ uint8_t WhirlpoolYJ1B::getTemperatureRaw() const
 	return m_data.bits.bit1.temperature;
 }
 
-void WhirlpoolYJ1B::setTemperature( uint8_t temp )
+WhirlpoolYJ1B& WhirlpoolYJ1B::setTemperature( uint8_t temp )
 {
 	if( temp > 30 )
 		m_data.bits.bit1.temperature = 30 - 16;
@@ -115,6 +122,8 @@ void WhirlpoolYJ1B::setTemperature( uint8_t temp )
 		m_data.bits.bit1.temperature = 0;
 	else
 		m_data.bits.bit1.temperature = temp - 16;
+
+		return *this;
 }
 
 uint8_t WhirlpoolYJ1B::getTemperature() const

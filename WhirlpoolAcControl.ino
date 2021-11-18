@@ -15,16 +15,26 @@
 #include "src/IRremote/IRremote.hpp"
 #include "src/Whirlpool_YJ1B.hpp"
 
-// PULSE_DISTANCE: HeaderMarkMicros=8950 HeaderSpaceMicros=4400 MarkMicros=600 OneSpaceMicros=1650 ZeroSpaceMicros=550
-// 68 bits LSB first
+WhirlpoolYJ1B g_whirpool;
+
 void setup()
 {
+	g_whirpool.setFan( Fan::Auto )
+		.setJet( false )
+		.setLight( true )
+		.setMode( Mode::Cool )
+		.setPower( false )
+		.setSleep( false )
+		.setSwing( false )
+		.setTemperature( 22 );
+
 	Serial.begin( 115200 );
 	Serial.println( "Started" );
 	IrSender.begin( true );
 	IrSender.enableIROut( AC_KHZ );
 }
 
+/*
 void send()
 {
 	// Header
@@ -42,8 +52,17 @@ void send()
 
 	Serial.println( "Sended" );
 }
+*/
 
-WhirlpoolYJ1B whirpool;
+void send(){
+	IrSender.mark( AC_HEADER_MARK );
+	IrSender.space( AC_HEADER_SPACE );
+
+	
+	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, a, 32, false, false );
+
+	delay( DELAY_AFTER_SEND );
+}
 
 void loop()
 {

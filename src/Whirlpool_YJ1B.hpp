@@ -135,24 +135,24 @@ public:
 
 	WhirlpoolYJ1BData& data();
 
-	void setMode( Mode mode );
+	WhirlpoolYJ1B& setMode( Mode mode );
 	Mode getMode() const;
-	void setPower( bool power );
+	WhirlpoolYJ1B& setPower( bool power );
 	bool getPower() const;
-	void setFan( Fan fan );
+	WhirlpoolYJ1B& setFan( Fan fan );
 	Fan getFan() const;
-	void setSwitg( bool swing );
-	bool getSwitg() const;
-	void setSleep( bool sleep );
+	WhirlpoolYJ1B& setSwing( bool swing );
+	bool getSwing() const;
+	WhirlpoolYJ1B& setSleep( bool sleep );
 	bool getSleep() const;
-	void setJet( bool jet );
+	WhirlpoolYJ1B& setJet( bool jet );
 	bool getJet() const;
-	void setLight( bool light );
+	WhirlpoolYJ1B& setLight( bool light );
 	bool getLight() const;
-	void setTemperatureRaw( uint8_t temp );
+	WhirlpoolYJ1B& setTemperatureRaw( uint8_t temp );
 	uint8_t getTemperatureRaw() const;
 
-	void setTemperature( uint8_t temp );
+	WhirlpoolYJ1B& setTemperature( uint8_t temp );
 	uint8_t getTemperature() const;
 
 #ifdef TRACE
