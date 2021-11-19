@@ -34,32 +34,13 @@ void setup()
 	IrSender.enableIROut( AC_KHZ );
 }
 
-/*
 void send()
 {
-	// Header
 	IrSender.mark( AC_HEADER_MARK );
 	IrSender.space( AC_HEADER_SPACE );
 
-	const uint32_t a = 0b00000010011100001101100100000100;
-	const uint32_t b = 0b10100000001010101100000000000000;
-	const uint32_t c = 0b0101;
-
-	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, a, 32, false, false );
-	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, b, 32, false, false );
-	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, c, 4, false, true );
-	delay( DELAY_AFTER_SEND );
-
-	Serial.println( "Sended" );
-}
-*/
-
-void send(){
-	IrSender.mark( AC_HEADER_MARK );
-	IrSender.space( AC_HEADER_SPACE );
-
-	
-	IrSender.sendPulseDistanceWidthData( AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, a, 32, false, false );
+	IrSender.sendPulseDistanceWidthRawData(
+		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, g_whirpool.data().raw, 68 );
 
 	delay( DELAY_AFTER_SEND );
 }
@@ -72,11 +53,10 @@ void loop()
 		switch( incomingByte )
 		{
 		case '1':
-			whirpool.setMode( static_cast< Mode >( ( static_cast< uint8_t >( whirpool.getMode() ) + 1 )
-												   % static_cast< uint8_t >( Mode::Heat ) ) );
-			whirpool.printDebug();
+			g_whirpool.setMode( static_cast< Mode >( ( static_cast< uint8_t >( g_whirpool.getMode() ) + 1 )
+													 % static_cast< uint8_t >( Mode::Heat ) ) );
+			g_whirpool.printDebug();
+			send();
 		}
 	}
-
-	//  send();
 }

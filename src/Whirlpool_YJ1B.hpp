@@ -32,10 +32,10 @@ enum class AM_PM : bool
 
 union WhirlpoolYJ1BData
 {
-	union Bit0
+	union Byte0
 	{
 		uint8_t raw;
-		struct SBit0
+		struct SByte0
 		{
 			uint8_t mode : 3;
 			uint8_t power : 1;
@@ -45,20 +45,20 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	union Bit1
+	union Byte1
 	{
 		uint8_t raw;
-		struct SBit1
+		struct SByte1
 		{
 			uint8_t temperature : 4;   // Temperature 0: 16deg, 1: 17deg  etc..
 			uint8_t clock_Seconds : 4; // 4 second interval - 60sec/15
 		};
 	};
 
-	union Bit2
+	union Byte2
 	{
 		uint8_t raw;
-		struct SBit2
+		struct SByte2
 		{
 			uint8_t clock_Minutes : 6;
 			uint8_t clock_AM_PM : 1;
@@ -66,20 +66,20 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	union Bit3
+	union Byte3
 	{
 		uint8_t raw;
-		struct SBit3
+		struct SByte3
 		{
 			uint8_t clock_Hours : 4;
 			uint8_t timer_Enable_Minutes_LSB : 4;
 		};
 	};
 
-	union Bit4
+	union Byte4
 	{
 		uint8_t raw;
-		struct SBit4
+		struct SByte4
 		{
 			uint8_t timer_Enable_Minutes_MSB : 2;
 			uint8_t timer_Enable_AM_PM : 1;
@@ -88,10 +88,10 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	union Bit5
+	union Byte5
 	{
 		uint8_t raw;
-		struct SBit5
+		struct SByte5
 		{
 			uint8_t timer_Disable_Minutes_LSB : 6;
 			uint8_t timer_Disable_AM_PM : 1;
@@ -99,10 +99,10 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	union Bit6
+	union Byte6
 	{
 		uint8_t raw;
-		struct SBit6
+		struct SByte6
 		{
 			uint8_t timer_Disable_Hours : 4;
 			uint8_t jet : 1;
@@ -111,19 +111,19 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	// Bit 7,8 -> Unknown
+	// Byte 7,8 -> Unknown
 
 	uint8_t raw[ 9 ];
-	struct Bits
+	struct Bytes
 	{
-		Bit0::SBit0 bit0;
-		Bit1::SBit1 bit1;
-		Bit2::SBit2 bit2;
-		Bit3::SBit3 bit3;
-		Bit4::SBit4 bit4;
-		Bit5::SBit5 bit5;
-		Bit6::SBit6 bit6;
-	} bits;
+		Byte0::SByte0 bit0;
+		Byte1::SByte1 bit1;
+		Byte2::SByte2 bit2;
+		Byte3::SByte3 bit3;
+		Byte4::SByte4 bit4;
+		Byte5::SByte5 bit5;
+		Byte6::SByte6 bit6;
+	} bytes;
 };
 
 class WhirlpoolYJ1B
@@ -176,7 +176,7 @@ public:
 		};
 
 		print( "Mode: " );
-		switch( Mode( m_data.bits.bit0.mode ) )
+		switch( Mode( m_data.bytes.bit0.mode ) )
 		{
 		case Mode::Sense_6th:
 			println( "6th Sense" );
@@ -198,10 +198,10 @@ public:
 			break;
 		};
 
-		printBool( "Power: ", m_data.bits.bit0.power );
+		printBool( "Power: ", m_data.bytes.bit0.power );
 
 		print( "Fan:" );
-		switch( Fan( m_data.bits.bit0.fan ) )
+		switch( Fan( m_data.bytes.bit0.fan ) )
 		{
 		case Fan::Auto:
 			println( "Auto" );
@@ -220,13 +220,13 @@ public:
 			break;
 		};
 
-		printBool( "Swing: ", m_data.bits.bit0.swing );
-		printBool( "Sleep: ", m_data.bits.bit0.sleep );
-		printBool( "Light: ", m_data.bits.bit6.light );
-		printBool( "Jet: ", m_data.bits.bit6.jet );
+		printBool( "Swing: ", m_data.bytes.bit0.swing );
+		printBool( "Sleep: ", m_data.bytes.bit0.sleep );
+		printBool( "Light: ", m_data.bytes.bit6.light );
+		printBool( "Jet: ", m_data.bytes.bit6.jet );
 
 		print( "Temperature: " );
-		println( m_data.bits.bit1.temperature + 16 );
+		println( m_data.bytes.bit1.temperature + 16 );
 	}
 
 #ifdef ARDUINO

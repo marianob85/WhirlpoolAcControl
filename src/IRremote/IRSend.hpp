@@ -169,6 +169,30 @@ void IRsend::sendPulseDistanceWidthData( unsigned int aOneMarkMicros,
 	}
 }
 
+void IRsend::sendPulseDistanceWidthRawData( unsigned int aOneMarkMicros,
+											unsigned int aOneSpaceMicros,
+											unsigned int aZeroMarkMicros,
+											unsigned int aZeroSpaceMicros,
+											uint8_t* data,
+											uint8_t aNumberOfBits )
+{
+
+	for( uint_fast8_t bit = 0; bit < aNumberOfBits; ++bit )
+	{
+		auto const markbit = data[ bit / 8 ] >> bit % 8;
+		if( markbit & 1 )
+		{ // Send a 1
+			mark( aOneMarkMicros );
+			space( aOneSpaceMicros );
+		}
+		else
+		{ // Send a 0
+			mark( aZeroMarkMicros );
+			space( aZeroSpaceMicros );
+		}
+	}
+}
+
 void IRsend::mark( unsigned int aMarkMicros )
 {
 
@@ -254,7 +278,7 @@ setFeedbackLED( false );
 #if defined( __AVR__ )
 			//            tDeltaMicros += (160 / CLOCKS_PER_MICRO); // adding this once increases program size !
 			if( tDeltaMicros >= aMarkMicros - ( 30 + ( 112 / CLOCKS_PER_MICRO ) ) )
-			{	// 30 to be constant. Using periodTimeMicros increases program size too much.
+			{ // 30 to be constant. Using periodTimeMicros increases program size too much.
 				// reset feedback led in the last pause before end
 				setFeedbackLED( false );
 			}
