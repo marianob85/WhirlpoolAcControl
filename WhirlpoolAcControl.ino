@@ -79,64 +79,64 @@ RTC_DS1307 rtc;
 void setup()
 {
 
-  Serial.begin( 115200 );
-  Serial.println( "Started" );
+	Serial.begin( 115200 );
+	Serial.println( "Started" );
 
-  IrSender.begin( true );
-  IrSender.enableIROut( AC_KHZ );
+	IrSender.begin( true );
+	IrSender.enableIROut( AC_KHZ );
 
-  g_whirpool.setFan( Fan::Auto )
-  .setJet( false )
-  .setLight( true )
-  .setMode( Mode::Cool )
-  .setPower( false )
-  .setSleep( false )
-  .setSwing( false )
-  .setTemperature( 22 );
+	g_whirpool.setFan( Fan::Auto )
+		.setJet( false )
+		.setLight( true )
+		.setMode( Mode::Cool )
+		.setPower( false )
+		.setSleep( false )
+		.setSwing( false )
+		.setTemperature( 22 );
 
-  if ( !rtc.begin() )
-  {
-    Serial.println( "Couldn't find RTC" );
-    Serial.flush();
-    while ( 1 )
-      delay( 10 );
-  }
+	if( !rtc.begin() )
+	{
+		Serial.println( "Couldn't find RTC" );
+		Serial.flush();
+		while( 1 )
+			delay( 10 );
+	}
 
-  if ( !rtc.isrunning() )
-  {
-    Serial.println( "RTC is NOT running, let's set the time!" );
-    // When time needs to be set on a new device, or after a power loss, the
-    // following line sets the RTC to the date & time this sketch was compiled
-    rtc.adjust( DateTime( F( __DATE__ ), F( __TIME__ ) ) );
-    // This line sets the RTC with an explicit date & time, for example to set
-    // January 21, 2014 at 3am you would call:
-    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
-  }
+	if( !rtc.isrunning() )
+	{
+		Serial.println( "RTC is NOT running, let's set the time!" );
+		// When time needs to be set on a new device, or after a power loss, the
+		// following line sets the RTC to the date & time this sketch was compiled
+		rtc.adjust( DateTime( F( __DATE__ ), F( __TIME__ ) ) );
+		// This line sets the RTC with an explicit date & time, for example to set
+		// January 21, 2014 at 3am you would call:
+		// rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+	}
 }
 
 void send()
 {
-  IrSender.mark( AC_HEADER_MARK );
-  IrSender.space( AC_HEADER_SPACE );
+	IrSender.mark( AC_HEADER_MARK );
+	IrSender.space( AC_HEADER_SPACE );
 
-  IrSender.sendPulseDistanceWidthRawData(
-    AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, g_whirpool.data().raw, 68 );
+	IrSender.sendPulseDistanceWidthRawData(
+		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, g_whirpool.data().raw, 68 );
 
-  delay( DELAY_AFTER_SEND );
+	delay( DELAY_AFTER_SEND );
 }
 
 void loop()
 {
-  if ( Serial.available() > 0 )
-  {
-    const auto incomingByte = Serial.read();
-    switch ( incomingByte )
-    {
-      case '1':
-        g_whirpool.setMode( static_cast< Mode >( ( static_cast< uint8_t >( g_whirpool.getMode() ) + 1 )
-                            % static_cast< uint8_t >( Mode::Heat ) ) );
-        g_whirpool.printDebug();
-        send();
-    }
-  }
+	if( Serial.available() > 0 )
+	{
+		const auto incomingByte = Serial.read();
+		switch( incomingByte )
+		{
+		case '1':
+			g_whirpool.setMode( static_cast< Mode >( ( static_cast< uint8_t >( g_whirpool.getMode() ) + 1 )
+													 % static_cast< uint8_t >( Mode::Heat ) ) );
+			g_whirpool.printDebug();
+			send();
+		}
+	}
 }
