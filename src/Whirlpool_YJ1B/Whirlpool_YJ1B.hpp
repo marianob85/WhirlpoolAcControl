@@ -122,7 +122,14 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	// 8 -> Unknown
+	union Byte8
+	{
+		uint8_t raw;
+		struct SByte8
+		{
+			uint8_t unknown : 4;
+		};
+	};
 
 	uint8_t raw[ 9 ];
 	struct Bytes
@@ -135,6 +142,7 @@ union WhirlpoolYJ1BData
 		Byte5::SByte5 byte5;
 		Byte6::SByte6 byte6;
 		Byte7::SByte7 byte7;
+		Byte8::SByte8 byte8;
 	} bytes;
 };
 
@@ -146,6 +154,8 @@ public:
 	virtual ~WhirlpoolYJ1B() = default;
 
 	WhirlpoolYJ1BData& data();
+
+	WhirlpoolYJ1B& setUnknown();
 
 	WhirlpoolYJ1B& setMode( Mode mode );
 	Mode getMode() const;

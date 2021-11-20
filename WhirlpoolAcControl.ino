@@ -78,7 +78,6 @@ RTC_DS1307 rtc;
 
 void setup()
 {
-
 	Serial.begin( 115200 );
 	Serial.println( "Started" );
 
@@ -104,7 +103,8 @@ void setup()
 		// rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
 	}
 
-	g_whirpool.setFan( Fan::Auto )
+	g_whirpool.setUnknown()
+		.setFan( Fan::Auto )
 		.setJet( false )
 		.setLight( true )
 		.setMode( Mode::Cool )
@@ -120,7 +120,7 @@ void send()
 	IrSender.space( AC_HEADER_SPACE );
 
 	IrSender.sendPulseDistanceWidthRawData(
-		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, g_whirpool.data().raw, 68 );
+		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, g_whirpool.data().raw, 68, true );
 
 	delay( DELAY_AFTER_SEND );
 }

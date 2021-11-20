@@ -245,8 +245,9 @@ public:
 										unsigned int aOneSpaceMicros,
 										unsigned int aZeroMarkMicros,
 										unsigned int aZeroSpaceMicros,
-										uint8_t *data,
-										uint8_t aNumberOfBits );
+										uint8_t* data,
+										uint8_t aNumberOfBits,
+										bool sendStopBit );
 	void sendBiphaseData( unsigned int aBiphaseTimeUnit, uint32_t aData, uint_fast8_t aNumberOfBits );
 
 	void mark( unsigned int aMarkMicros );

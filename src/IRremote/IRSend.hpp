@@ -174,7 +174,8 @@ void IRsend::sendPulseDistanceWidthRawData( unsigned int aOneMarkMicros,
 											unsigned int aZeroMarkMicros,
 											unsigned int aZeroSpaceMicros,
 											uint8_t* data,
-											uint8_t aNumberOfBits )
+											uint8_t aNumberOfBits,
+											bool sendStopBit )
 {
 
 	for( uint_fast8_t bit = 0; bit < aNumberOfBits; ++bit )
@@ -190,6 +191,10 @@ void IRsend::sendPulseDistanceWidthRawData( unsigned int aOneMarkMicros,
 			mark( aZeroMarkMicros );
 			space( aZeroSpaceMicros );
 		}
+	}
+	if( sendStopBit )
+	{
+		mark( aZeroMarkMicros ); // seems like this is used for stop bits
 	}
 }
 
