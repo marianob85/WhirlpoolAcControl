@@ -40,6 +40,8 @@ import collections
 # Byte 7: - Unknown
 # Byte 8: - Unknown
 
+12345678
+
 class WhirpoolYJ1B:
     def onCommand(self, data, rawData):
         # print(rawData)
@@ -51,10 +53,10 @@ class WhirpoolYJ1B:
         protocol["Swing"] = bool(rawData[6])
         protocol["Sleep"] = bool(rawData[7])
         protocol["Temperature"] = ( data[1] & 0b1111 ) + 16
-        protocol["4SecondsInterval"] = ( ( data[1] >> 4 ) & 0b1111 ) *  4
+        protocol["Clock: 4SecondsInterval"] = ( ( data[1] >> 4 ) & 0b1111 ) *  4
         protocol["Clock: Minutes"] = (data[2] & 0b111111 )
         protocol["Clock: Hours"] = (data[3] & 0b1111)
-        protocol["Clock:"] = self.getAMPM( (data[3] >> 6 ) & 0b1)
+        protocol["Clock:"] = self.getAMPM( (data[2] >> 6 ) & 0b1)
         protocol["Timer Off: Minutes"] = data[5] & 0b111111
         protocol["Timer Off: Hours"] = data[6] & 0b1111
         protocol["Timer Off:"] = self.getAMPM( (data[5] >> 6 ) & 0b1 )
@@ -73,8 +75,8 @@ class WhirpoolYJ1B:
 
     def getAMPM(self,data):
         switcher={
-            False:"AM",
-            True:"PM",
+            0:"AM",
+            1:"PM",
         }
         return switcher.get(data, data)
 

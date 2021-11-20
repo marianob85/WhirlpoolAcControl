@@ -111,18 +111,30 @@ union WhirlpoolYJ1BData
 		};
 	};
 
-	// Byte 7,8 -> Unknown
+	union Byte7
+	{
+		uint8_t raw;
+		struct SByte7
+		{
+			uint8_t unknown : 1;
+			uint8_t round : 1; // User Temp on/off
+			uint8_t unknownA : 6;
+		};
+	};
+
+	// 8 -> Unknown
 
 	uint8_t raw[ 9 ];
 	struct Bytes
 	{
-		Byte0::SByte0 bit0;
-		Byte1::SByte1 bit1;
-		Byte2::SByte2 bit2;
-		Byte3::SByte3 bit3;
-		Byte4::SByte4 bit4;
-		Byte5::SByte5 bit5;
-		Byte6::SByte6 bit6;
+		Byte0::SByte0 byte0;
+		Byte1::SByte1 byte1;
+		Byte2::SByte2 byte2;
+		Byte3::SByte3 byte3;
+		Byte4::SByte4 byte4;
+		Byte5::SByte5 byte5;
+		Byte6::SByte6 byte6;
+		Byte7::SByte7 byte7;
 	} bytes;
 };
 
@@ -152,6 +164,12 @@ public:
 	WhirlpoolYJ1B& setTemperatureRaw( uint8_t temp );
 	uint8_t getTemperatureRaw() const;
 
+	WhirlpoolYJ1B& setClockAMPM( AM_PM amPm );
+	WhirlpoolYJ1B& setClockAMPM( bool pm );
+	WhirlpoolYJ1B& setClockSeconds( uint8_t seconds );
+	WhirlpoolYJ1B& setClockMinutes( uint8_t minutes );
+	WhirlpoolYJ1B& setClockHours( uint8_t hours );
+
 	WhirlpoolYJ1B& setTemperature( uint8_t temp );
 	uint8_t getTemperature() const;
 
@@ -176,7 +194,7 @@ public:
 		};
 
 		print( "Mode: " );
-		switch( Mode( m_data.bytes.bit0.mode ) )
+		switch( Mode( m_data.bytes.byte0.mode ) )
 		{
 		case Mode::Sense_6th:
 			println( "6th Sense" );
@@ -198,10 +216,10 @@ public:
 			break;
 		};
 
-		printBool( "Power: ", m_data.bytes.bit0.power );
+		printBool( "Power: ", m_data.bytes.byte0.power );
 
 		print( "Fan:" );
-		switch( Fan( m_data.bytes.bit0.fan ) )
+		switch( Fan( m_data.bytes.byte0.fan ) )
 		{
 		case Fan::Auto:
 			println( "Auto" );
@@ -220,13 +238,13 @@ public:
 			break;
 		};
 
-		printBool( "Swing: ", m_data.bytes.bit0.swing );
-		printBool( "Sleep: ", m_data.bytes.bit0.sleep );
-		printBool( "Light: ", m_data.bytes.bit6.light );
-		printBool( "Jet: ", m_data.bytes.bit6.jet );
+		printBool( "Swing: ", m_data.bytes.byte0.swing );
+		printBool( "Sleep: ", m_data.bytes.byte0.sleep );
+		printBool( "Light: ", m_data.bytes.byte6.light );
+		printBool( "Jet: ", m_data.bytes.byte6.jet );
 
 		print( "Temperature: " );
-		println( m_data.bytes.bit1.temperature + 16 );
+		println( m_data.bytes.byte1.temperature + 16 );
 	}
 
 #ifdef ARDUINO

@@ -85,15 +85,6 @@ void setup()
 	IrSender.begin( true );
 	IrSender.enableIROut( AC_KHZ );
 
-	g_whirpool.setFan( Fan::Auto )
-		.setJet( false )
-		.setLight( true )
-		.setMode( Mode::Cool )
-		.setPower( false )
-		.setSleep( false )
-		.setSwing( false )
-		.setTemperature( 22 );
-
 	if( !rtc.begin() )
 	{
 		Serial.println( "Couldn't find RTC" );
@@ -112,6 +103,15 @@ void setup()
 		// January 21, 2014 at 3am you would call:
 		// rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
 	}
+
+	g_whirpool.setFan( Fan::Auto )
+		.setJet( false )
+		.setLight( true )
+		.setMode( Mode::Cool )
+		.setPower( false )
+		.setSleep( false )
+		.setSwing( false )
+		.setTemperature( 22 );
 }
 
 void send()
@@ -129,6 +129,13 @@ void loop()
 {
 	if( Serial.available() > 0 )
 	{
+
+		const DateTime now = rtc.now();
+		g_whirpool.setClockAMPM( now.isPM() )
+			.setClockSeconds( now.second() )
+			.setClockMinutes( now.minute() )
+			.setClockHours( now.hour() );
+
 		const auto incomingByte = Serial.read();
 		switch( incomingByte )
 		{
