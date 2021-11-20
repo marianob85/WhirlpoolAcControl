@@ -42,56 +42,67 @@ import collections
 
 12345678
 
+
 class WhirpoolYJ1B:
     def onCommand(self, data, rawData):
-        # print(rawData)
-        protocol = collections.OrderedDict()
+        if len(rawData) == 68:
+            self.printCommon(data, rawData)
+        elif len(rawData) == 16:
+            self.printRound(data, rawData)
 
-        protocol['Mode'] = self.getMode( data[0] & 0b111 )
+    def printRound(self, data, rawData):
+        print("")
+        print("User data unknown")
+
+    def printCommon(self, data, rawData):
+        protocol = collections.OrderedDict()
+        protocol['Mode'] = self.getMode(data[0] & 0b111)
         protocol["Power"] = bool(rawData[3])
-        protocol['Fan'] = self.getFan( ( data[0] >> 4 ) & 0b11 )
+        protocol['Fan'] = self.getFan((data[0] >> 4) & 0b11)
         protocol["Swing"] = bool(rawData[6])
         protocol["Sleep"] = bool(rawData[7])
-        protocol["Temperature"] = ( data[1] & 0b1111 ) + 16
-        protocol["Clock: 4SecondsInterval"] = ( ( data[1] >> 4 ) & 0b1111 ) *  4
-        protocol["Clock: Minutes"] = (data[2] & 0b111111 )
+        protocol["Temperature"] = (data[1] & 0b1111) + 16
+        protocol["Clock: 4SecondsInterval"] = ((data[1] >> 4) & 0b1111) * 4
+        protocol["Clock: Minutes"] = (data[2] & 0b111111)
         protocol["Clock: Hours"] = (data[3] & 0b1111)
-        protocol["Clock:"] = self.getAMPM( (data[2] >> 6 ) & 0b1)
+        protocol["Clock:"] = self.getAMPM((data[2] >> 6) & 0b1)
         protocol["Timer Off: Minutes"] = data[5] & 0b111111
         protocol["Timer Off: Hours"] = data[6] & 0b1111
-        protocol["Timer Off:"] = self.getAMPM( (data[5] >> 6 ) & 0b1 )
+        protocol["Timer Off:"] = self.getAMPM((data[5] >> 6) & 0b1)
         protocol["Timer Off: Enable"] = bool((data[5] >> 7) & 0b1)
 
-        protocol["Timer On: Minutes"] = ( ( data[3] >> 4 ) & 0b11111 ) & ( data[4] << 4 & 0b000011 )
-        protocol["Timer On: Hours"] = (data[4] >> 4 ) & 0b1111
-        protocol["Timer On:"] = self.getAMPM( (data[4] >> 2 ) & 0b1 )
+        protocol["Timer On: Minutes"] = ((data[3] >> 4) & 0b11111) & (data[4] << 4 & 0b000011)
+        protocol["Timer On: Hours"] = (data[4] >> 4) & 0b1111
+        protocol["Timer On:"] = self.getAMPM((data[4] >> 2) & 0b1)
         protocol["Timer On: Enable"] = bool((data[4] >> 3) & 0b1)
 
-        protocol["Jet"] = bool( ( data[6] >> 4 ) & 0b1 )
+        protocol["Jet"] = bool((data[6] >> 4) & 0b1)
         protocol["Light"] = bool((data[6] >> 5) & 0b1)
-        print("")
-        for v,k in protocol.items():
-            print ("{0}:{1}".format(v,k))
+        protocol["Round(User)"] = bool(data[7] >> 1 & 0b1)
 
-    def getAMPM(self,data):
-        switcher={
-            0:"AM",
-            1:"PM",
+        print("")
+        for v, k in protocol.items():
+            print("{0}:{1}".format(v, k))
+
+    def getAMPM(self, data):
+        switcher = {
+            0: "AM",
+            1: "PM",
         }
         return switcher.get(data, data)
 
     def getFan(self, data):
-        switcher={
-            0:"Auto",
+        switcher = {
+            0: "Auto",
         }
         return switcher.get(data, data)
 
     def getMode(self, data):
-        switcher={
-            0:"6th Sense",
-            1:"Cool",
-            2:"Dry",
-            3:"Fan",
-            4:"Heat"
+        switcher = {
+            0: "6th Sense",
+            1: "Cool",
+            2: "Dry",
+            3: "Fan",
+            4: "Heat"
         }
         return switcher.get(data, data)
