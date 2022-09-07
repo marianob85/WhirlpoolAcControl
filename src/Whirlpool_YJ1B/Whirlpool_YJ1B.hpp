@@ -189,6 +189,7 @@ public:
 	std::string_view getFanText() const;
 	std::string_view getJetText() const;
 	std::string_view getSwingText() const;
+	std::string_view getSleepText() const;
 
 #ifdef TRACE
 	void printDebug()

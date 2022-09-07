@@ -193,3 +193,8 @@ string_view WhirlpoolYJ1B::getSwingText() const
 {
 	return mapOnOff.at( tounderlying( getSwing() ) );
 }
+
+string_view WhirlpoolYJ1B::getSleepText() const
+{
+	return mapOnOff.at( getSleep() );
+}

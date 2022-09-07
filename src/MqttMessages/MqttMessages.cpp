@@ -144,6 +144,7 @@ void MqttClientForIR::publishStatus()
 	doc[ "fan" ]		 = tounderlying( m_whirpoolData->getFan() );
 	doc[ "jet" ]		 = m_whirpoolData->getJet();
 	doc[ "swing" ]		 = m_whirpoolData->getSwing();
+	doc[ "sleep" ]		 = m_whirpoolData->getSleep();
 
 	char buffer[ 1024 ];
 	serializeJson( doc, buffer );
@@ -187,4 +188,7 @@ void MqttClientForIR::publishJet()
 	m_mqttClient.publish( ( m_device + "/jet" ).c_str(), 0, true, m_whirpoolData->getJetText().data() );
 }
 
-void MqttClientForIR::publishSleep() {}
+void MqttClientForIR::publishSleep()
+{
+	m_mqttClient.publish( ( m_device + "/sleep" ).c_str(), 0, true, m_whirpoolData->getSleepText().data() );
+}
