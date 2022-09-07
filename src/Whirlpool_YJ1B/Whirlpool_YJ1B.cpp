@@ -1,21 +1,14 @@
 #include "Whirlpool_YJ1B.hpp"
+#include <stdex.hpp>
+#include <map>
 
 using namespace std;
 
-#ifdef ARDUINO
-template< typename T >
-uint8_t tounderlying( T t )
-{
-	return static_cast< uint8_t >( t );
-}
-#else
-#include <utility>
-template< typename E >
-constexpr typename std::underlying_type< E >::type tounderlying( E e ) noexcept
-{
-	return static_cast< typename std::underlying_type< E >::type >( e );
-}
-#endif
+static const std::map< bool, std::string_view > mapOnOff{ { true, "ON" }, { false, "OFF" } };
+static const std::map< uint8_t, std::string_view > mapFan{ { 0, "Auto" }, { 1, "V1" }, { 2, "V2" }, { 3, "V3" } };
+static const std::map< bool, std::string_view > mapMode{
+	{ 0, "Sense_6th" }, { 1, "Cool" }, { 2, "Dry" }, { 3, "Fan" }, { 4, "Heat" }
+};
 
 WhirlpoolYJ1B::WhirlpoolYJ1B( const WhirlpoolYJ1BData& data ) : m_data{ data } {}
 
@@ -169,4 +162,34 @@ WhirlpoolYJ1B& WhirlpoolYJ1B::setTemperature( uint8_t temp )
 uint8_t WhirlpoolYJ1B::getTemperature() const
 {
 	return m_data.bytes.byte1.temperature + 16;
+}
+
+string_view WhirlpoolYJ1B::getLightText() const
+{
+	return mapOnOff.at( getLight() );
+}
+
+string_view WhirlpoolYJ1B::getModeText() const
+{
+	return mapMode.at( tounderlying( getMode() ) );
+}
+
+string_view WhirlpoolYJ1B::getPowerText() const
+{
+	return mapOnOff.at( getPower() );
+}
+
+string_view WhirlpoolYJ1B::getFanText() const
+{
+	return mapFan.at( tounderlying( getFan() ) );
+}
+
+string_view WhirlpoolYJ1B::getJetText() const
+{
+	return mapOnOff.at( tounderlying( getJet() ) );
+}
+
+string_view WhirlpoolYJ1B::getSwingText() const
+{
+	return mapOnOff.at( tounderlying( getSwing() ) );
 }

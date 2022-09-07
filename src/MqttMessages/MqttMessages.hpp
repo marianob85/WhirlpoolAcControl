@@ -26,6 +26,18 @@ public:
 					size_t total );
 
 private:
+	void sendInitValues();
+	void publishStatus();
+	void publishTemperature();
+	void publishLight();
+	void publishMode();
+	void publishState();
+	void publishFan();
+	void publishSwing();
+	void publishJet();
+	void publishSleep();
+
+private:
 	AsyncMqttClient m_mqttClient{};
 	Ticker m_mqttReconnectTimer{};
 	std::string m_device;

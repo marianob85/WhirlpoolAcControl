@@ -1,13 +1,32 @@
 #include "MqttMessages.hpp"
 #include <ESP8266WiFi.h>
+#include <ArduinoJson.h>
+#include <stdex.hpp>
+
+using namespace std;
 using namespace std::literals;
 
-MqttClientForIR::MqttClientForIR( WhirlpoolYJ1B* whirpoolData ) : m_whirpoolData( whirpoolData ) {}
+/*
+Root: /manobit/AC/Sypialnia
+Status:
+	- / -> json
+	- /temperature
+Commands:
+	- /cmd/commit
+	- /cmd/temperature/XX ( in celcius )
+	- /cmd/temperature ( payload raw data )
+*/
+
+constexpr std::string_view mqttRoot = "manobit/AC/";
+
+MqttClientForIR::MqttClientForIR( WhirlpoolYJ1B* whirpoolData ) : m_device( mqttRoot ), m_whirpoolData( whirpoolData )
+{
+}
 
 void MqttClientForIR::setup(
 	const char* server, uint16_t port, const char* user, const char* password, const char* device )
 {
-	m_device = "IR/"s + device;
+	m_device += device;
 	m_mqttClient.onConnect( std::bind( &MqttClientForIR::onConnect, this, std::placeholders::_1 ) );
 	m_mqttClient.onDisconnect( std::bind( &MqttClientForIR::onDisconnect, this, std::placeholders::_1 ) );
 	m_mqttClient.onSubscribe(
@@ -51,8 +70,10 @@ void MqttClientForIR::onConnect( bool sessionPresent )
 	Serial.print( "Session present: " );
 	Serial.println( sessionPresent );
 
-	m_mqttClient.subscribe( ( m_device + "/#" ).c_str(), 2 );
-	//m_mqttClient.publish( ( m_device + "/status" ).c_str(), 0, true, "test 1" );
+	m_mqttClient.subscribe( ( m_device + "/cmd/#" ).c_str(), 2 );
+
+	sendInitValues();
+	// m_mqttClient.publish( ( m_device + "/status" ).c_str(), 0, true, "test 1" );
 }
 
 void MqttClientForIR::onPublish( uint16_t packetId )
@@ -81,7 +102,6 @@ void MqttClientForIR::onUnsubscribe( uint16_t packetId )
 void MqttClientForIR::onMessage(
 	char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total )
 {
-	//parsowanie topic'a '
 	Serial.println( "Publish received." );
 	Serial.print( "  topic: " );
 	Serial.println( topic );
@@ -97,4 +117,74 @@ void MqttClientForIR::onMessage(
 	Serial.println( index );
 	Serial.print( "  total: " );
 	Serial.println( total );
+
+	// parseMessage();
 }
+
+void MqttClientForIR::sendInitValues()
+{
+	publishStatus();
+	publishTemperature();
+	publishLight();
+	publishMode();
+	publishState();
+	publishFan();
+	publishSwing();
+	publishJet();
+	publishSleep();
+}
+
+void MqttClientForIR::publishStatus()
+{
+	StaticJsonDocument< 1024 > doc;
+	doc[ "temperature" ] = m_whirpoolData->getTemperature();
+	doc[ "light" ]		 = m_whirpoolData->getLight();
+	doc[ "mode" ]		 = tounderlying( m_whirpoolData->getMode() );
+	doc[ "state" ]		 = m_whirpoolData->getPower();
+	doc[ "fan" ]		 = tounderlying( m_whirpoolData->getFan() );
+	doc[ "jet" ]		 = m_whirpoolData->getJet();
+	doc[ "swing" ]		 = m_whirpoolData->getSwing();
+
+	char buffer[ 1024 ];
+	serializeJson( doc, buffer );
+
+	m_mqttClient.publish( ( m_device + "/" ).c_str(), 0, true, buffer );
+}
+
+void MqttClientForIR::publishTemperature()
+{
+	m_mqttClient.publish(
+		( m_device + "/temperature" ).c_str(), 0, true, to_string( m_whirpoolData->getTemperature() ).c_str() );
+}
+
+void MqttClientForIR::publishLight()
+{
+	m_mqttClient.publish( ( m_device + "/light" ).c_str(), 0, true, m_whirpoolData->getLightText().data() );
+}
+
+void MqttClientForIR::publishMode()
+{
+	m_mqttClient.publish( ( m_device + "/mode" ).c_str(), 0, true, m_whirpoolData->getModeText().data() );
+}
+
+void MqttClientForIR::publishState()
+{
+	m_mqttClient.publish( ( m_device + "/state" ).c_str(), 0, true, m_whirpoolData->getPowerText().data() );
+}
+
+void MqttClientForIR::publishFan()
+{
+	m_mqttClient.publish( ( m_device + "/fan" ).c_str(), 0, true, m_whirpoolData->getFanText().data() );
+}
+
+void MqttClientForIR::publishSwing()
+{
+	m_mqttClient.publish( ( m_device + "/swing" ).c_str(), 0, true, m_whirpoolData->getSwingText().data() );
+}
+
+void MqttClientForIR::publishJet()
+{
+	m_mqttClient.publish( ( m_device + "/jet" ).c_str(), 0, true, m_whirpoolData->getJetText().data() );
+}
+
+void MqttClientForIR::publishSleep() {}

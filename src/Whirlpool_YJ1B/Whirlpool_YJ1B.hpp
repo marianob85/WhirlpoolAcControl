@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 #ifdef ARDUINO
 #include <Arduino.h>
 #else
@@ -182,6 +182,13 @@ public:
 
 	WhirlpoolYJ1B& setTemperature( uint8_t temp );
 	uint8_t getTemperature() const;
+
+	std::string_view getLightText() const;
+	std::string_view getModeText() const;
+	std::string_view getPowerText() const;
+	std::string_view getFanText() const;
+	std::string_view getJetText() const;
+	std::string_view getSwingText() const;
 
 #ifdef TRACE
 	void printDebug()
