@@ -2,11 +2,11 @@
 #include <string>
 #include <AsyncMqttClient.h>
 #include <Ticker.h>
-
+#include <Whirlpool_YJ1B.hpp>
 class MqttClientForIR
 {
 public:
-	MqttClientForIR() = default;
+	MqttClientForIR( WhirlpoolYJ1B* whirpoolData );
 
 	void setup( const char* server, uint16_t port, const char* user, const char* password, const char* device );
 	void detach();
@@ -29,4 +29,5 @@ private:
 	AsyncMqttClient m_mqttClient{};
 	Ticker m_mqttReconnectTimer{};
 	std::string m_device;
+	WhirlpoolYJ1B* m_whirpoolData{};
 };

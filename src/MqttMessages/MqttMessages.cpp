@@ -2,6 +2,8 @@
 #include <ESP8266WiFi.h>
 using namespace std::literals;
 
+MqttClientForIR::MqttClientForIR( WhirlpoolYJ1B* whirpoolData ) : m_whirpoolData( whirpoolData ) {}
+
 void MqttClientForIR::setup(
 	const char* server, uint16_t port, const char* user, const char* password, const char* device )
 {

@@ -16,9 +16,9 @@
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
-#include "src/MqttMessages/MqttMessages.hpp"
-#include "src/IRremote/IRremote.hpp"
-#include "src/Whirlpool_YJ1B/Whirlpool_YJ1B.hpp"
+#include <IRremote.hpp>
+#include "MqttMessages/MqttMessages.hpp"
+#include "Whirlpool_YJ1B/Whirlpool_YJ1B.hpp"
 
 char mqtt_server[ 40 ];
 char mqtt_port[ 6 ]		 = "1883";
@@ -27,11 +27,11 @@ char mqtt_password[ 20 ] = "";
 char mqtt_user[ 20 ]	 = "";
 char mqtt_device[ 20 ]	 = "default";
 
-WhirlpoolYJ1B g_whirpool;
 WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
 
-MqttClientForIR mqtt;
+WhirlpoolYJ1B g_whirpool;
+MqttClientForIR mqtt( &g_whirpool );
 
 WiFiUDP ntpUDP;
 NTPClient timeClient( ntpUDP, "pool.ntp.org" );
