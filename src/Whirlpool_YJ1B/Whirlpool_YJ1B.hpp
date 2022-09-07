@@ -149,7 +149,7 @@ union WhirlpoolYJ1BData
 class WhirlpoolYJ1B
 {
 public:
-	WhirlpoolYJ1B() = default;
+	WhirlpoolYJ1B();
 	explicit WhirlpoolYJ1B( const WhirlpoolYJ1BData& data );
 	virtual ~WhirlpoolYJ1B() = default;
 
@@ -189,6 +189,7 @@ public:
 	std::string_view getFanText() const;
 	std::string_view getJetText() const;
 	std::string_view getSwingText() const;
+	std::string_view getSleepText() const;
 
 #ifdef TRACE
 	void printDebug()

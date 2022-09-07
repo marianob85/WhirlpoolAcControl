@@ -10,6 +10,18 @@ static const std::map< bool, std::string_view > mapMode{
 	{ 0, "Sense_6th" }, { 1, "Cool" }, { 2, "Dry" }, { 3, "Fan" }, { 4, "Heat" }
 };
 
+WhirlpoolYJ1B::WhirlpoolYJ1B()
+{
+	setFan( Fan::Auto );
+	setMode( Mode::Cool );
+	setPower( false );
+	setSwing( false );
+	setJet( false );
+	setLight( true );
+	setSleep( false );
+	setTemperature( 24 );
+}
+
 WhirlpoolYJ1B::WhirlpoolYJ1B( const WhirlpoolYJ1BData& data ) : m_data{ data } {}
 
 WhirlpoolYJ1BData& WhirlpoolYJ1B::data()
@@ -192,4 +204,9 @@ string_view WhirlpoolYJ1B::getJetText() const
 string_view WhirlpoolYJ1B::getSwingText() const
 {
 	return mapOnOff.at( tounderlying( getSwing() ) );
+}
+
+string_view WhirlpoolYJ1B::getSleepText() const
+{
+	return mapOnOff.at( getSleep() );
 }
