@@ -1,8 +1,0 @@
-{
-    "sketch": "WhirlpoolAcControl.ino",
-    "board": "arduino:avr:uno",
-    "port": "COM5",
-    "buildPreferences": [
-    ],
-    "programmer": "arduino:avrispmkii"
-}

@@ -1,16 +1,44 @@
+// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
+//
+// PIO Unified Debugger
+//
+// Documentation: https://docs.platformio.org/page/plus/debugging.html
+// Configuration: https://docs.platformio.org/page/projectconf/section_env_debug.html
+
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [  
+    "configurations": [
         {
-            "type": "lldb",
+            "type": "platformio-debug",
             "request": "launch",
-            "name": "Launch",
-            "program": "${workspaceFolder}/build/tests/Whirlpool_YJ1BTests.exe",
-            "args": [],
-            "cwd": "${workspaceFolder}"
+            "name": "PIO Debug",
+            "executable": "d:/Source/GitHub/marianob85/WhirlpoolAcControl/.pio/build/esp12e/firmware.elf",
+            "projectEnvName": "esp12e",
+            "toolchainBinDir": "C:/Users/mariano/.platformio/packages/toolchain-xtensa/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug"
+            }
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (skip Pre-Debug)",
+            "executable": "d:/Source/GitHub/marianob85/WhirlpoolAcControl/.pio/build/esp12e/firmware.elf",
+            "projectEnvName": "esp12e",
+            "toolchainBinDir": "C:/Users/mariano/.platformio/packages/toolchain-xtensa/bin",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (without uploading)",
+            "executable": "d:/Source/GitHub/marianob85/WhirlpoolAcControl/.pio/build/esp12e/firmware.elf",
+            "projectEnvName": "esp12e",
+            "toolchainBinDir": "C:/Users/mariano/.platformio/packages/toolchain-xtensa/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "loadMode": "manual"
         }
     ]
 }
