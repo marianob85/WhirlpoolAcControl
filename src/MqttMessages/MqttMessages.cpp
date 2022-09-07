@@ -118,7 +118,12 @@ void MqttClientForIR::onMessage(
 	Serial.print( "  total: " );
 	Serial.println( total );
 
-	// parseMessage();
+	parseMessage( topic, payload, properties, len, index, total );
+}
+
+void MqttClientForIR::parseMessage(
+	char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total )
+{
 }
 
 void MqttClientForIR::sendInitValues()

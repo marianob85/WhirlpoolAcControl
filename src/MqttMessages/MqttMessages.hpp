@@ -26,6 +26,12 @@ public:
 					size_t total );
 
 private:
+	void parseMessage( char* topic,
+					   char* payload,
+					   AsyncMqttClientMessageProperties properties,
+					   size_t len,
+					   size_t index,
+					   size_t total );
 	void sendInitValues();
 	void publishStatus();
 	void publishTemperature();
