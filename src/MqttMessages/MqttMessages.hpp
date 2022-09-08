@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <map>
 #include <AsyncMqttClient.h>
 #include <Ticker.h>
 #include <Whirlpool_YJ1B.hpp>
@@ -8,7 +9,12 @@ class MqttClientForIR
 public:
 	MqttClientForIR( WhirlpoolYJ1B* whirpoolData );
 
-	void setup( const char* server, uint16_t port, const char* user, const char* password, const char* device );
+	void setup( const char* server,
+				uint16_t port,
+				const char* user,
+				const char* password,
+				const char* device,
+				std::function< void( WhirlpoolYJ1B* ) > commit );
 	void detach();
 
 	void connect();
@@ -42,10 +48,17 @@ private:
 	void publishSwing();
 	void publishJet();
 	void publishSleep();
+	void publishCommited();
+	void proceedCommand( const char* command, const char* value );
+
+	void onTemperature( const char* value );
+	void onCommit();
 
 private:
 	AsyncMqttClient m_mqttClient{};
 	Ticker m_mqttReconnectTimer{};
 	std::string m_device;
 	WhirlpoolYJ1B* m_whirpoolData{};
+	std::function< void( WhirlpoolYJ1B* ) > m_commitEvent;
+	std::map< std::string_view, std::function< void( const char* ) > > m_commands;
 };

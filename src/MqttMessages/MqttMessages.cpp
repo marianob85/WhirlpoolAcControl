@@ -19,13 +19,34 @@ Commands:
 
 constexpr std::string_view mqttRoot = "manobit/AC/";
 
-MqttClientForIR::MqttClientForIR( WhirlpoolYJ1B* whirpoolData ) : m_device( mqttRoot ), m_whirpoolData( whirpoolData )
+template< typename T >
+std::vector< T > split_string( T string, T delim )
 {
+	std::vector< T > result;
+	size_t from = 0, to = 0;
+	while( T::npos != ( to = string.find( delim, from ) ) )
+	{
+		result.push_back( string.substr( from, to - from ) );
+		from = to + delim.length();
+	}
+	result.push_back( string.substr( from, to ) );
+	return result;
 }
 
-void MqttClientForIR::setup(
-	const char* server, uint16_t port, const char* user, const char* password, const char* device )
+MqttClientForIR::MqttClientForIR( WhirlpoolYJ1B* whirpoolData ) : m_device( mqttRoot ), m_whirpoolData( whirpoolData )
 {
+	m_commands.emplace( "temperature", std::bind( &MqttClientForIR::onTemperature, this, std::placeholders::_1 ) );
+	m_commands.emplace( "commit", std::bind( &MqttClientForIR::onCommit, this ) );
+}
+
+void MqttClientForIR::setup( const char* server,
+							 uint16_t port,
+							 const char* user,
+							 const char* password,
+							 const char* device,
+							 std::function< void( WhirlpoolYJ1B* ) > commit )
+{
+	m_commitEvent = commit;
 	m_device += device;
 	m_mqttClient.onConnect( std::bind( &MqttClientForIR::onConnect, this, std::placeholders::_1 ) );
 	m_mqttClient.onDisconnect( std::bind( &MqttClientForIR::onDisconnect, this, std::placeholders::_1 ) );
@@ -73,7 +94,6 @@ void MqttClientForIR::onConnect( bool sessionPresent )
 	m_mqttClient.subscribe( ( m_device + "/cmd/#" ).c_str(), 2 );
 
 	sendInitValues();
-	// m_mqttClient.publish( ( m_device + "/status" ).c_str(), 0, true, "test 1" );
 }
 
 void MqttClientForIR::onPublish( uint16_t packetId )
@@ -124,6 +144,30 @@ void MqttClientForIR::onMessage(
 void MqttClientForIR::parseMessage(
 	char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total )
 {
+	const string topic_s{ topic };
+	const auto device = m_device + "/cmd/";
+	if( topic_s.find( device, 0 ) == std::string::npos )
+		return;
+
+	const auto commands = split_string< std::string >( topic_s.substr( device.length() ), "/" );
+
+	switch( commands.size() )
+	{
+	case 1:
+		proceedCommand( commands.at( 0 ).c_str(), payload );
+		break;
+	case 2:
+		proceedCommand( commands.at( 0 ).c_str(), commands.at( 1 ).c_str() );
+		break;
+	default:
+		break;
+	};
+}
+
+void MqttClientForIR::proceedCommand( const char* command, const char* value )
+{
+	if( const auto it = m_commands.find( command ); it != m_commands.end() )
+		it->second( value );
 }
 
 void MqttClientForIR::sendInitValues()
@@ -196,4 +240,27 @@ void MqttClientForIR::publishJet()
 void MqttClientForIR::publishSleep()
 {
 	m_mqttClient.publish( ( m_device + "/sleep" ).c_str(), 0, true, m_whirpoolData->getSleepText().data() );
+}
+
+void MqttClientForIR::publishCommited()
+{
+	m_mqttClient.publish( ( m_device + "/commited" ).c_str(), 0, false, "1" );
+}
+
+void MqttClientForIR::onTemperature( const char* value )
+{
+	try
+	{
+		m_whirpoolData->setTemperature( stoi( value ) );
+		publishTemperature();
+		publishStatus();
+	}
+	catch( const std::invalid_argument& )
+	{
+	}
+}
+void MqttClientForIR::onCommit()
+{
+	m_commitEvent( m_whirpoolData );
+	publishCommited();
 }

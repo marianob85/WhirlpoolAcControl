@@ -34,7 +34,9 @@ WhirlpoolYJ1B g_whirpool;
 MqttClientForIR mqtt( &g_whirpool );
 
 WiFiUDP ntpUDP;
-NTPClient timeClient( ntpUDP, "pool.ntp.org" );
+NTPClient timeClient( ntpUDP );
+
+Ticker blinker, ntpUpdate;
 
 void hang( const char* message )
 {
@@ -165,6 +167,25 @@ void readConfiguration()
 	file.close();
 }
 
+void onCommit( WhirlpoolYJ1B* data )
+{
+	data->setClockAMPM( timeClient.getHours() >= 12 )
+		.setClockSeconds( timeClient.getSeconds() )
+		.setClockMinutes( timeClient.getMinutes() )
+		.setClockHours( timeClient.getHours() );
+	IrSender.mark( AC_HEADER_MARK );
+	IrSender.space( AC_HEADER_SPACE );
+	IrSender.sendPulseDistanceWidthRawData(
+		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, data->data().raw, 68, true );
+}
+
+void blink()
+{
+	static bool state{ false };
+	digitalWrite( LED_BUILTIN, state ); // turn the LED on (HIGH is the voltage level)
+	state = !state;
+}
+
 // the setup function runs once when you press reset or power the board
 void setup()
 {
@@ -177,43 +198,29 @@ void setup()
 		hang( "Error mounting the file system" );
 
 	readConfiguration();
-	mqtt.setup( mqtt_server, std::stoi( mqtt_port ), mqtt_user, mqtt_password, mqtt_device );
+	mqtt.setup( mqtt_server, std::stoi( mqtt_port ), mqtt_user, mqtt_password, mqtt_device, onCommit );
 	setupWifi();
 
 	timeClient.begin();
 	timeClient.setTimeOffset( 3600 );
-
+	timeClient.setPoolServerIP( WiFi.gatewayIP() );
+	timeClient.forceUpdate();
+	
 	IrSender.begin( false );
 	IrSender.enableIROut( AC_KHZ );
 
+	blinker.attach_ms( 500, blink );
+
 	Serial.println( "Setup end." );
-}
-
-void send()
-{
-	IrSender.mark( AC_HEADER_MARK );
-	IrSender.space( AC_HEADER_SPACE );
-
-	IrSender.sendPulseDistanceWidthRawData(
-		AC_BIT_MARK, AC_ONE_SPACE, AC_BIT_MARK, AC_ZERO_SPACE, g_whirpool.data().raw, 68, true );
-
-	delay( DELAY_AFTER_SEND );
 }
 
 // the loop function runs over and over again forever
 void loop()
 {
-	digitalWrite( LED_BUILTIN, HIGH ); // turn the LED on (HIGH is the voltage level)
-	delay( 100 );					   // wait for a second
-	digitalWrite( LED_BUILTIN, LOW );  // turn the LED off by making the voltage LOW
-	delay( 100 );					   // wait for a second
-	Serial.println( "Alive!" );
 
 	if( Serial.available() > 0 )
 	{
-		Serial.println( "Sending\n" );
-		timeClient.update();
-		g_whirpool.setClockAMPM( false )
+		g_whirpool.setClockAMPM( timeClient.getHours() >= 12 )
 			.setClockSeconds( timeClient.getSeconds() )
 			.setClockMinutes( timeClient.getMinutes() )
 			.setClockHours( timeClient.getHours() );
@@ -222,14 +229,15 @@ void loop()
 		switch( incomingByte )
 		{
 		case '0':
-			timeClient.update();
+			Serial.print( "IsTimeSet: " );
+			Serial.println( timeClient.isTimeSet() );
 			Serial.println( timeClient.getFormattedTime() );
 			break;
 		case '1':
 			g_whirpool.setMode( static_cast< Mode >( ( static_cast< uint8_t >( g_whirpool.getMode() ) + 1 )
 													 % static_cast< uint8_t >( Mode::Heat ) ) );
 			// g_whirpool.printDebug();
-			send();
+			onCommit( &g_whirpool );
 			break;
 		case '2':
 			WiFiManager wifiManager;
