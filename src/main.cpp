@@ -12,8 +12,8 @@
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
-#include <NTPClient.h>
-#include <Timezone.h>
+#include <time.h> // https://werner.rothschopf.net/202011_arduino_esp8266_ntp_en.htm
+#include <sntp.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
@@ -34,13 +34,9 @@ WiFiEventHandler wifiDisconnectHandler;
 WhirlpoolYJ1B g_whirpool;
 MqttClientForIR mqtt( &g_whirpool );
 
-WiFiUDP ntpUDP;
-NTPClient timeClient( ntpUDP );
-TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
-TimeChangeRule CET = {"CET ", Last, Sun, Oct, 3, 60};       // Central European Standard Time
-Timezone CE(CEST, CET);
+#define MY_TZ "CET-1CEST,M3.5.0,M10.5.0/3"
 
-Ticker blinker, ntpUpdate;
+Ticker blinker;
 
 void hang( const char* message )
 {
@@ -173,10 +169,13 @@ void readConfiguration()
 
 void onCommit( WhirlpoolYJ1B* data )
 {
-	data->setClockAMPM( timeClient.getHours() >= 12 )
-		.setClockSeconds( timeClient.getSeconds() )
-		.setClockMinutes( timeClient.getMinutes() )
-		.setClockHours( timeClient.getHours() );
+	time_t now; // this is the epoch
+	tm tm;
+	time( &now );			  // read the current time
+	localtime_r( &now, &tm ); // update the structure tm with the current time
+
+	data->setClockHours( tm.tm_hour ).setClockMinutes( tm.tm_min ).setClockSeconds( tm.tm_sec );
+
 	IrSender.mark( AC_HEADER_MARK );
 	IrSender.space( AC_HEADER_SPACE );
 	IrSender.sendPulseDistanceWidthRawData(
@@ -188,6 +187,33 @@ void blink()
 	static bool state{ false };
 	digitalWrite( LED_BUILTIN, state ); // turn the LED on (HIGH is the voltage level)
 	state = !state;
+}
+
+void showTime()
+{
+	time_t now; // this is the epoch
+	tm tm;
+	time( &now );			  // read the current time
+	localtime_r( &now, &tm ); // update the structure tm with the current time
+	Serial.print( "year:" );
+	Serial.print( tm.tm_year + 1900 ); // years since 1900
+	Serial.print( "\tmonth:" );
+	Serial.print( tm.tm_mon + 1 ); // January = 0 (!)
+	Serial.print( "\tday:" );
+	Serial.print( tm.tm_mday ); // day of month
+	Serial.print( "\thour:" );
+	Serial.print( tm.tm_hour ); // hours since midnight  0-23
+	Serial.print( "\tmin:" );
+	Serial.print( tm.tm_min ); // minutes after the hour  0-59
+	Serial.print( "\tsec:" );
+	Serial.print( tm.tm_sec ); // seconds after the minute  0-61*
+	Serial.print( "\twday" );
+	Serial.print( tm.tm_wday ); // days since Sunday 0-6
+	if( tm.tm_isdst == 1 )		// Daylight Saving Time flag
+		Serial.print( "\tDST" );
+	else
+		Serial.print( "\tstandard" );
+	Serial.println();
 }
 
 // the setup function runs once when you press reset or power the board
@@ -205,11 +231,9 @@ void setup()
 	mqtt.setup( mqtt_server, std::stoi( mqtt_port ), mqtt_user, mqtt_password, mqtt_device, onCommit );
 	setupWifi();
 
-	timeClient.begin();
-	timeClient.setTimeOffset( 3600 );
-	timeClient.setPoolServerIP( WiFi.gatewayIP() );
-	timeClient.forceUpdate();
-	
+	static const auto dhcp = WiFi.gatewayIP().toString();
+	configTime( MY_TZ, dhcp.c_str() );
+
 	IrSender.begin( false );
 	IrSender.enableIROut( AC_KHZ );
 
@@ -224,26 +248,16 @@ void loop()
 
 	if( Serial.available() > 0 )
 	{
-		g_whirpool.setClockAMPM( timeClient.getHours() >= 12 )
-			.setClockSeconds( timeClient.getSeconds() )
-			.setClockMinutes( timeClient.getMinutes() )
-			.setClockHours( timeClient.getHours() );
-
 		const auto incomingByte = Serial.read();
 		switch( incomingByte )
 		{
 		case '0':
-			Serial.print( "IsTimeSet: " );
-			Serial.println( timeClient.isTimeSet() );
-			Serial.println( timeClient.getFormattedTime() );
+			showTime();
 			break;
 		case '1':
-			g_whirpool.setMode( static_cast< Mode >( ( static_cast< uint8_t >( g_whirpool.getMode() ) + 1 )
-													 % static_cast< uint8_t >( Mode::Heat ) ) );
-			// g_whirpool.printDebug();
 			onCommit( &g_whirpool );
 			break;
-		case '2':
+		case 'r':
 			WiFiManager wifiManager;
 			wifiManager.resetSettings();
 			ESP.reset();

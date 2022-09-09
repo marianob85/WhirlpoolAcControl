@@ -156,6 +156,8 @@ WhirlpoolYJ1B& WhirlpoolYJ1B::setClockMinutes( uint8_t minutes )
 WhirlpoolYJ1B& WhirlpoolYJ1B::setClockHours( uint8_t hours )
 {
 	m_data.bytes.byte3.clock_Hours = hours % 12;
+	if( hours >= 12 )
+		setClockAMPM( true );
 	return *this;
 }
 
