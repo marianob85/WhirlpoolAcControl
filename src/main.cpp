@@ -13,7 +13,6 @@
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
 #include <time.h> // https://werner.rothschopf.net/202011_arduino_esp8266_ntp_en.htm
-#include <sntp.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
