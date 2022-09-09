@@ -4,6 +4,7 @@
 #include <AsyncMqttClient.h>
 #include <Ticker.h>
 #include <Whirlpool_YJ1B.hpp>
+
 class MqttClientForIR
 {
 public:
@@ -32,12 +33,8 @@ public:
 					size_t total );
 
 private:
-	void parseMessage( char* topic,
-					   char* payload,
-					   AsyncMqttClientMessageProperties properties,
-					   size_t len,
-					   size_t index,
-					   size_t total );
+	std::string getStatusJson() const;
+	void parseMessage( char* topic, std::string_view payload );
 	void sendInitValues();
 	void publishStatus();
 	void publishTemperature();
@@ -49,9 +46,16 @@ private:
 	void publishJet();
 	void publishSleep();
 	void publishCommited();
-	void proceedCommand( const char* command, const char* value );
+	void proceedCommand( std::string_view command, std::string_view value );
 
-	void onTemperature( const char* value );
+	void onTemperature( std::string_view value );
+	void onLight( std::string_view value );
+	void onMode( std::string_view value );
+	void onState( std::string_view value );
+	void onFan( std::string_view value );
+	void onSwing( std::string_view value );
+	void onJet( std::string_view value );
+	void onSleep( std::string_view value );
 	void onCommit();
 
 private:
@@ -60,5 +64,5 @@ private:
 	std::string m_device;
 	WhirlpoolYJ1B* m_whirpoolData{};
 	std::function< void( WhirlpoolYJ1B* ) > m_commitEvent;
-	std::map< std::string_view, std::function< void( const char* ) > > m_commands;
+	std::map< std::string_view, std::function< void( std::string_view ) > > m_commands;
 };

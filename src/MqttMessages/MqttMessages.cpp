@@ -19,6 +19,25 @@ Commands:
 
 constexpr std::string_view mqttRoot = "manobit/AC/";
 
+static const std::map< string_view, bool > onoffMap{ { "on", true },	 { "off", false }, { "true", true },
+													 { "false", false }, { "0", false },   { "1", true } };
+static const std::map< string_view, Fan > fanMap{ { "Auto", Fan::Auto }, { "V1", Fan::V1 },	 { "V2", Fan::V2 },
+												  { "V3", Fan::V3 },	 { "0", Fan::Auto }, { "1", Fan::V1 },
+												  { "2", Fan::V2 },		 { "3", Fan::V3 } };
+
+static const std::map< string_view, Mode > modeMap{
+	{ "Sense_6th", Mode::Sense_6th },
+	{ "Cool", Mode::Cool },
+	{ "Dry", Mode::Dry },
+	{ "Fan", Mode::Fan },
+	{ "Heat", Mode::Heat },
+	{ "0", Mode::Sense_6th },
+	{ "1", Mode::Cool },
+	{ "2", Mode::Dry },
+	{ "3", Mode::Fan },
+	{ "4", Mode::Heat },
+};
+
 template< typename T >
 std::vector< T > split_string( T string, T delim )
 {
@@ -36,6 +55,13 @@ std::vector< T > split_string( T string, T delim )
 MqttClientForIR::MqttClientForIR( WhirlpoolYJ1B* whirpoolData ) : m_device( mqttRoot ), m_whirpoolData( whirpoolData )
 {
 	m_commands.emplace( "temperature", std::bind( &MqttClientForIR::onTemperature, this, std::placeholders::_1 ) );
+	m_commands.emplace( "light", std::bind( &MqttClientForIR::onLight, this, std::placeholders::_1 ) );
+	m_commands.emplace( "mode", std::bind( &MqttClientForIR::onMode, this, std::placeholders::_1 ) );
+	m_commands.emplace( "state", std::bind( &MqttClientForIR::onState, this, std::placeholders::_1 ) );
+	m_commands.emplace( "fan", std::bind( &MqttClientForIR::onFan, this, std::placeholders::_1 ) );
+	m_commands.emplace( "swing", std::bind( &MqttClientForIR::onSwing, this, std::placeholders::_1 ) );
+	m_commands.emplace( "jet", std::bind( &MqttClientForIR::onJet, this, std::placeholders::_1 ) );
+	m_commands.emplace( "sleep", std::bind( &MqttClientForIR::onSleep, this, std::placeholders::_1 ) );
 	m_commands.emplace( "commit", std::bind( &MqttClientForIR::onCommit, this ) );
 }
 
@@ -138,11 +164,11 @@ void MqttClientForIR::onMessage(
 	Serial.print( "  total: " );
 	Serial.println( total );
 
-	parseMessage( topic, payload, properties, len, index, total );
+	string payload_s{ payload, payload + len };
+	parseMessage( topic, payload_s );
 }
 
-void MqttClientForIR::parseMessage(
-	char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total )
+void MqttClientForIR::parseMessage( char* topic, string_view payload )
 {
 	const string topic_s{ topic };
 	const auto device = m_device + "/cmd/";
@@ -157,17 +183,19 @@ void MqttClientForIR::parseMessage(
 		proceedCommand( commands.at( 0 ).c_str(), payload );
 		break;
 	case 2:
-		proceedCommand( commands.at( 0 ).c_str(), commands.at( 1 ).c_str() );
+		proceedCommand( commands.at( 0 ).c_str(), commands.at( 1 ) );
 		break;
 	default:
 		break;
 	};
 }
 
-void MqttClientForIR::proceedCommand( const char* command, const char* value )
+void MqttClientForIR::proceedCommand( string_view command, string_view payload )
 {
+	string value_s{ payload };
+	transform( value_s.begin(), value_s.end(), value_s.begin(), ::tolower );
 	if( const auto it = m_commands.find( command ); it != m_commands.end() )
-		it->second( value );
+		it->second( value_s );
 }
 
 void MqttClientForIR::sendInitValues()
@@ -183,7 +211,7 @@ void MqttClientForIR::sendInitValues()
 	publishSleep();
 }
 
-void MqttClientForIR::publishStatus()
+std::string MqttClientForIR::getStatusJson() const
 {
 	StaticJsonDocument< 1024 > doc;
 	doc[ "temperature" ] = m_whirpoolData->getTemperature();
@@ -197,8 +225,12 @@ void MqttClientForIR::publishStatus()
 
 	char buffer[ 1024 ];
 	serializeJson( doc, buffer );
+	return string( buffer );
+}
 
-	m_mqttClient.publish( ( m_device + "/" ).c_str(), 0, true, buffer );
+void MqttClientForIR::publishStatus()
+{
+	m_mqttClient.publish( ( m_device + "/" ).c_str(), 0, true, getStatusJson().c_str() );
 }
 
 void MqttClientForIR::publishTemperature()
@@ -244,19 +276,97 @@ void MqttClientForIR::publishSleep()
 
 void MqttClientForIR::publishCommited()
 {
-	m_mqttClient.publish( ( m_device + "/commited" ).c_str(), 0, false, "1" );
+	m_mqttClient.publish( ( m_device + "/commited" ).c_str(), 0, false, getStatusJson().c_str() );
 }
 
-void MqttClientForIR::onTemperature( const char* value )
+void MqttClientForIR::onTemperature( std::string_view value )
 {
+	if( value.empty() )
+		return;
 	try
 	{
-		m_whirpoolData->setTemperature( stoi( value ) );
+
+		if( "up"s.compare( value ) == 0 )
+			m_whirpoolData->setTemperature( m_whirpoolData->getTemperature() + 1 );
+		else if( "down"s.compare( value ) == 0 )
+			m_whirpoolData->setTemperature( m_whirpoolData->getTemperature() - 1 );
+		else
+			m_whirpoolData->setTemperature( stoi( value.data() ) );
 		publishTemperature();
 		publishStatus();
 	}
 	catch( const std::invalid_argument& )
 	{
+	}
+}
+
+void MqttClientForIR::onLight( std::string_view value )
+{
+	if( const auto it = onoffMap.find( value ); it != onoffMap.end() )
+	{
+		m_whirpoolData->setLight( it->second );
+		publishLight();
+		publishStatus();
+	}
+}
+
+void MqttClientForIR::onMode( std::string_view value )
+{
+	if( const auto it = modeMap.find( value ); it != modeMap.end() )
+	{
+		m_whirpoolData->setMode( it->second );
+		publishMode();
+		publishStatus();
+	}
+}
+
+void MqttClientForIR::onState( std::string_view value )
+{
+	if( const auto it = onoffMap.find( value ); it != onoffMap.end() )
+	{
+		m_whirpoolData->setPower( it->second );
+		publishState();
+		publishStatus();
+	}
+}
+
+void MqttClientForIR::onFan( std::string_view value )
+{
+	if( const auto it = fanMap.find( value ); it != fanMap.end() )
+	{
+		m_whirpoolData->setFan( it->second );
+		publishSwing();
+		publishStatus();
+	}
+}
+
+void MqttClientForIR::onSwing( std::string_view value )
+{
+	if( const auto it = onoffMap.find( value ); it != onoffMap.end() )
+	{
+		m_whirpoolData->setSwing( it->second );
+		publishSwing();
+		publishStatus();
+	}
+}
+
+void MqttClientForIR::onJet( std::string_view value )
+{
+	if( const auto it = onoffMap.find( value ); it != onoffMap.end() )
+	{
+		m_whirpoolData->setJet( it->second );
+		publishJet();
+		publishStatus();
+	}
+}
+
+void MqttClientForIR::onSleep( std::string_view value )
+{
+	if( const auto it = onoffMap.find( value ); it != onoffMap.end() )
+	{
+		m_whirpoolData->setSleep( it->second );
+		publishSleep();
+		publishStatus();
 	}
 }
 void MqttClientForIR::onCommit()

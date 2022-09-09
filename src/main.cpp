@@ -13,6 +13,7 @@
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
+#include <Timezone.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
@@ -35,6 +36,9 @@ MqttClientForIR mqtt( &g_whirpool );
 
 WiFiUDP ntpUDP;
 NTPClient timeClient( ntpUDP );
+TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
+TimeChangeRule CET = {"CET ", Last, Sun, Oct, 3, 60};       // Central European Standard Time
+Timezone CE(CEST, CET);
 
 Ticker blinker, ntpUpdate;
 

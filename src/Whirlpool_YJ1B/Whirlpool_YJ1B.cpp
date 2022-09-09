@@ -4,7 +4,7 @@
 
 using namespace std;
 
-static const std::map< bool, std::string_view > mapOnOff{ { true, "ON" }, { false, "OFF" } };
+static const std::map< bool, std::string_view > mapOnOff{ { true, "On" }, { false, "Off" } };
 static const std::map< uint8_t, std::string_view > mapFan{ { 0, "Auto" }, { 1, "V1" }, { 2, "V2" }, { 3, "V3" } };
 static const std::map< bool, std::string_view > mapMode{
 	{ 0, "Sense_6th" }, { 1, "Cool" }, { 2, "Dry" }, { 3, "Fan" }, { 4, "Heat" }
