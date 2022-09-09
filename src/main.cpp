@@ -236,7 +236,7 @@ void setup()
 	IrSender.begin( false );
 	IrSender.enableIROut( AC_KHZ );
 
-	blinker.attach_ms( 500, blink );
+	blinker.attach_ms( 200, blink );
 
 	Serial.println( "Setup end." );
 }
