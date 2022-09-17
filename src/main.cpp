@@ -17,6 +17,8 @@
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
 #include <IRremote.hpp>
+#include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 #include "MqttMessages/MqttMessages.hpp"
 #include "Whirlpool_YJ1B/Whirlpool_YJ1B.hpp"
 
@@ -36,6 +38,9 @@ MqttClientForIR mqtt( &g_whirpool );
 #define MY_TZ "CET-1CEST,M3.5.0,M10.5.0/3"
 
 Ticker blinker;
+ESP8266HTTPUpdateServer httpUpdater;
+// https://www.mischianti.org/2020/06/30/how-to-create-a-rest-server-on-esp8266-or-esp32-post-put-patch-delete-part-3/
+ESP8266WebServer server( 80 );
 
 void hang( const char* message )
 {
@@ -215,6 +220,95 @@ void showTime()
 	Serial.println();
 }
 
+void getHelloWord()
+{
+	server.send( 200, "text/json", "{\"name\": \"Hello world\"}" );
+}
+
+void restServerRouting()
+{
+	server.on( "/", HTTP_GET, []() { server.send( 200, F( "text/html" ), F( "Welcome to the REST Web Server" ) ); } );
+	server.on( F( "/helloWorld" ), HTTP_GET, getHelloWord );
+}
+
+/*
+void setRoom() {
+	String postBody = server.arg("plain");
+	Serial.println(postBody);
+
+	DynamicJsonDocument doc(512);
+	DeserializationError error = deserializeJson(doc, postBody);
+	if (error) {
+		// if the file didn't open, print an error:
+		Serial.print(F("Error parsing JSON "));
+		Serial.println(error.c_str());
+
+		String msg = error.c_str();
+
+		server.send(400, F("text/html"),
+				"Error in parsin json body! <br>" + msg);
+
+	} else {
+		JsonObject postObj = doc.as<JsonObject>();
+
+		Serial.print(F("HTTP Method: "));
+		Serial.println(server.method());
+
+		if (server.method() == HTTP_POST) {
+			if (postObj.containsKey("name") && postObj.containsKey("type")) {
+
+				Serial.println(F("done."));
+
+				// Here store data or doing operation
+
+
+				// Create the response
+				// To get the status of the result you can get the http status so
+				// this part can be unusefully
+				DynamicJsonDocument doc(512);
+				doc["status"] = "OK";
+
+				Serial.print(F("Stream..."));
+				String buf;
+				serializeJson(doc, buf);
+
+				server.send(201, F("application/json"), buf);
+				Serial.print(F("done."));
+
+			}else {
+				DynamicJsonDocument doc(512);
+				doc["status"] = "KO";
+				doc["message"] = F("No data found, or incorrect!");
+
+				Serial.print(F("Stream..."));
+				String buf;
+				serializeJson(doc, buf);
+
+				server.send(400, F("application/json"), buf);
+				Serial.print(F("done."));
+			}
+		}
+	}
+}
+*/
+// Manage not found URL
+void handleNotFound()
+{
+	String message = "File Not Found\n\n";
+	message += "URI: ";
+	message += server.uri();
+	message += "\nMethod: ";
+	message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
+	message += "\nArguments: ";
+	message += server.args();
+	message += "\n";
+	for( uint8_t i = 0; i < server.args(); i++ )
+	{
+		message += " " + server.argName( i ) + ": " + server.arg( i ) + "\n";
+	}
+	server.send( 404, "text/plain", message );
+}
+
 // the setup function runs once when you press reset or power the board
 void setup()
 {
@@ -238,13 +332,22 @@ void setup()
 
 	blinker.attach_ms( 200, blink );
 
+	httpUpdater.setup( &server, "/update" );
+
+	// Set server routing
+	restServerRouting();
+	// Set not found response
+	server.onNotFound( handleNotFound );
+	// Start server
+	server.begin();
+
 	Serial.println( "Setup end." );
 }
 
 // the loop function runs over and over again forever
 void loop()
 {
-
+	server.handleClient();
 	if( Serial.available() > 0 )
 	{
 		const auto incomingByte = Serial.read();
