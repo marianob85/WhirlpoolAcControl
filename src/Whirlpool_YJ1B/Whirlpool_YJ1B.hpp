@@ -191,6 +191,8 @@ public:
 	std::string_view getSwingText() const;
 	std::string_view getSleepText() const;
 
+	std::string get() const;
+
 #ifdef TRACE
 	void printDebug()
 	{
@@ -265,7 +267,6 @@ public:
 		println( m_data.bytes.byte1.temperature + 16 );
 	}
 
-#ifdef ARDUINO
 	template< typename T >
 	void println( const T text )
 	{
@@ -280,19 +281,6 @@ public:
 	{
 		Serial.print( val, BIN );
 	}
-#else
-	template< typename T >
-	void println( const T text )
-	{
-		std::cout << text << std::endl;
-	}
-	template< typename T >
-	void print( const T text )
-	{
-		std::cout << text;
-	}
-	void printBin( uint8_t val ) {}
-#endif
 #endif
 
 private:

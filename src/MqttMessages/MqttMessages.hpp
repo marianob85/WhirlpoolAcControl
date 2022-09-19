@@ -33,7 +33,6 @@ public:
 					size_t total );
 
 private:
-	std::string getStatusJson() const;
 	void parseMessage( char* topic, std::string_view payload );
 	void sendInitValues();
 	void publishStatus();

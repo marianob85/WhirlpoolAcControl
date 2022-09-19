@@ -173,6 +173,8 @@ void readConfiguration()
 
 void onCommit( WhirlpoolYJ1B* data )
 {
+	Serial.print( "Commit: " );
+	Serial.println( data->get().c_str() );
 	time_t now; // this is the epoch
 	tm tm;
 	time( &now );			  // read the current time
@@ -220,77 +222,18 @@ void showTime()
 	Serial.println();
 }
 
-void getHelloWord()
-{
-	server.send( 200, "text/json", "{\"name\": \"Hello world\"}" );
-}
-
 void restServerRouting()
 {
-	server.on( "/", HTTP_GET, []() { server.send( 200, F( "text/html" ), F( "Welcome to the REST Web Server" ) ); } );
-	server.on( F( "/helloWorld" ), HTTP_GET, getHelloWord );
+	server.on( F( "/api/v1" ), HTTP_GET, []() { server.send( 200, F( "text/html" ), g_whirpool.get().c_str() ); } );
+	server.on( F( "/api/v1/commit" ),
+			   HTTP_PATCH,
+			   []()
+			   {
+				   onCommit( &g_whirpool );
+				   server.send( 200, F( "text/html" ), g_whirpool.get().c_str() );
+			   } );
 }
 
-/*
-void setRoom() {
-	String postBody = server.arg("plain");
-	Serial.println(postBody);
-
-	DynamicJsonDocument doc(512);
-	DeserializationError error = deserializeJson(doc, postBody);
-	if (error) {
-		// if the file didn't open, print an error:
-		Serial.print(F("Error parsing JSON "));
-		Serial.println(error.c_str());
-
-		String msg = error.c_str();
-
-		server.send(400, F("text/html"),
-				"Error in parsin json body! <br>" + msg);
-
-	} else {
-		JsonObject postObj = doc.as<JsonObject>();
-
-		Serial.print(F("HTTP Method: "));
-		Serial.println(server.method());
-
-		if (server.method() == HTTP_POST) {
-			if (postObj.containsKey("name") && postObj.containsKey("type")) {
-
-				Serial.println(F("done."));
-
-				// Here store data or doing operation
-
-
-				// Create the response
-				// To get the status of the result you can get the http status so
-				// this part can be unusefully
-				DynamicJsonDocument doc(512);
-				doc["status"] = "OK";
-
-				Serial.print(F("Stream..."));
-				String buf;
-				serializeJson(doc, buf);
-
-				server.send(201, F("application/json"), buf);
-				Serial.print(F("done."));
-
-			}else {
-				DynamicJsonDocument doc(512);
-				doc["status"] = "KO";
-				doc["message"] = F("No data found, or incorrect!");
-
-				Serial.print(F("Stream..."));
-				String buf;
-				serializeJson(doc, buf);
-
-				server.send(400, F("application/json"), buf);
-				Serial.print(F("done."));
-			}
-		}
-	}
-}
-*/
 // Manage not found URL
 void handleNotFound()
 {

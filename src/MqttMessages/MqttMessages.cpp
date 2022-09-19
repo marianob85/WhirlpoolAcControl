@@ -211,26 +211,9 @@ void MqttClientForIR::sendInitValues()
 	publishSleep();
 }
 
-std::string MqttClientForIR::getStatusJson() const
-{
-	StaticJsonDocument< 1024 > doc;
-	doc[ "temperature" ] = m_whirpoolData->getTemperature();
-	doc[ "light" ]		 = m_whirpoolData->getLight();
-	doc[ "mode" ]		 = tounderlying( m_whirpoolData->getMode() );
-	doc[ "state" ]		 = m_whirpoolData->getPower();
-	doc[ "fan" ]		 = tounderlying( m_whirpoolData->getFan() );
-	doc[ "jet" ]		 = m_whirpoolData->getJet();
-	doc[ "swing" ]		 = m_whirpoolData->getSwing();
-	doc[ "sleep" ]		 = m_whirpoolData->getSleep();
-
-	char buffer[ 1024 ];
-	serializeJson( doc, buffer );
-	return string( buffer );
-}
-
 void MqttClientForIR::publishStatus()
 {
-	m_mqttClient.publish( ( m_device + "/" ).c_str(), 0, true, getStatusJson().c_str() );
+	m_mqttClient.publish( ( m_device + "/" ).c_str(), 0, true, m_whirpoolData->get().c_str() );
 }
 
 void MqttClientForIR::publishTemperature()
@@ -276,7 +259,7 @@ void MqttClientForIR::publishSleep()
 
 void MqttClientForIR::publishCommited()
 {
-	m_mqttClient.publish( ( m_device + "/commited" ).c_str(), 0, false, getStatusJson().c_str() );
+	m_mqttClient.publish( ( m_device + "/commited" ).c_str(), 0, false, m_whirpoolData->get().c_str() );
 }
 
 void MqttClientForIR::onTemperature( std::string_view value )

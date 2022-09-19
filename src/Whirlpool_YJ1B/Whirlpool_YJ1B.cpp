@@ -1,4 +1,5 @@
 #include "Whirlpool_YJ1B.hpp"
+#include <ArduinoJson.h>
 #include <stdex.hpp>
 #include <map>
 
@@ -211,4 +212,21 @@ string_view WhirlpoolYJ1B::getSwingText() const
 string_view WhirlpoolYJ1B::getSleepText() const
 {
 	return mapOnOff.at( getSleep() );
+}
+
+std::string WhirlpoolYJ1B::get() const
+{
+	StaticJsonDocument< 1024 > doc;
+	doc[ "temperature" ] = getTemperature();
+	doc[ "light" ]		 = getLight();
+	doc[ "mode" ]		 = tounderlying( getMode() );
+	doc[ "state" ]		 = getPower();
+	doc[ "fan" ]		 = tounderlying( getFan() );
+	doc[ "jet" ]		 = getJet();
+	doc[ "swing" ]		 = getSwing();
+	doc[ "sleep" ]		 = getSleep();
+
+	char buffer[ 1024 ];
+	serializeJson( doc, buffer );
+	return string( buffer );
 }
