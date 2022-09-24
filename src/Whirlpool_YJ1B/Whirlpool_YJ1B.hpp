@@ -32,6 +32,13 @@ enum class AM_PM : bool
 
 union WhirlpoolYJ1BData
 {
+	WhirlpoolYJ1BData()
+	{
+		// This is not crc but some confirmation pattern
+		bytes.byte7.unknownA = 0b101000;
+		bytes.byte8.unknown = 0b0101; 
+	}
+
 	union Byte0
 	{
 		uint8_t raw;
