@@ -30,14 +30,6 @@ WhirlpoolYJ1BData& WhirlpoolYJ1B::data()
 	return m_data;
 }
 
-WhirlpoolYJ1B& WhirlpoolYJ1B::setUnknown()
-{
-	m_data.bytes.byte7.unknownA |= 0b101000;
-	m_data.bytes.byte8.unknown |= 0b101;
-
-	return *this;
-}
-
 WhirlpoolYJ1B& WhirlpoolYJ1B::setMode( Mode mode )
 {
 	const auto data = tounderlying( mode );

@@ -35,8 +35,8 @@ union WhirlpoolYJ1BData
 	WhirlpoolYJ1BData()
 	{
 		// This is not crc but some confirmation pattern
-		bytes.byte7.unknownA = 0b101000;
-		bytes.byte8.unknown = 0b0101; 
+		bytes.byte7.endPattern = 0b1010;
+		bytes.byte8.endPattern = 0b0101;
 	}
 
 	union Byte0
@@ -125,7 +125,8 @@ union WhirlpoolYJ1BData
 		{
 			uint8_t unknown : 1;
 			uint8_t round : 1; // User Temp on/off
-			uint8_t unknownA : 6;
+			uint8_t unknownA : 2;
+			uint8_t endPattern : 4;
 		};
 	};
 
@@ -134,7 +135,7 @@ union WhirlpoolYJ1BData
 		uint8_t raw;
 		struct SByte8
 		{
-			uint8_t unknown : 4;
+			uint8_t endPattern : 4;
 		};
 	};
 
@@ -161,8 +162,6 @@ public:
 	virtual ~WhirlpoolYJ1B() = default;
 
 	WhirlpoolYJ1BData& data();
-
-	WhirlpoolYJ1B& setUnknown();
 
 	WhirlpoolYJ1B& setMode( Mode mode );
 	Mode getMode() const;
