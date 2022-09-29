@@ -7,7 +7,10 @@
 #define AC_ZERO_SPACE AC_UNIT
 #define DELAY_AFTER_SEND 2000
 #define RAW_BUFFER_LENGTH 0
+
 #define IR_SEND_PIN 4
+#define DHT_PIN 0 // You should avoid GPIO0, GPIO2 and GPIO15
+#define DHT_READ_RATE 20000
 
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
@@ -19,8 +22,12 @@
 #include <IRremote.hpp>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
+#include <dhtnew.h>
+
 #include "MqttMessages/MqttMessages.hpp"
 #include "Whirlpool_YJ1B/Whirlpool_YJ1B.hpp"
+
+#define MY_TZ "CET-1CEST,M3.5.0,M10.5.0/3"
 
 char mqtt_server[ 40 ];
 char mqtt_port[ 6 ]		 = "1883";
@@ -31,12 +38,9 @@ char mqtt_device[ 20 ]	 = "default";
 
 WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
-
 WhirlpoolYJ1B g_whirpool;
 MqttClientForIR mqtt( &g_whirpool );
-
-#define MY_TZ "CET-1CEST,M3.5.0,M10.5.0/3"
-
+DHTNEW dhtSensor( DHT_PIN );
 Ticker blinker;
 ESP8266HTTPUpdateServer httpUpdater;
 // https://www.mischianti.org/2020/06/30/how-to-create-a-rest-server-on-esp8266-or-esp32-post-put-patch-delete-part-3/
@@ -195,6 +199,34 @@ void blink()
 	state = !state;
 }
 
+void dhtSensorRead()
+{
+	static auto lastTime = millis();
+	if( millis() - lastTime > DHT_READ_RATE )
+	{
+		lastTime = millis();
+
+		const auto ret = dhtSensor.read();
+
+		if( ret != DHTLIB_WAITING_FOR_READ )
+		{
+			switch( ret )
+			{
+			case DHTLIB_OK:
+			{
+				Serial.print( dhtSensor.getHumidity(), 1 );
+				Serial.print( "\t" );
+				Serial.println( dhtSensor.getTemperature(), 1 );
+			}
+			break;
+			default:
+				Serial.println( "Sensor read error" );
+				break;
+			};
+		}
+	}
+}
+
 void showTime()
 {
 	time_t now; // this is the epoch
@@ -255,10 +287,11 @@ void handleNotFound()
 // the setup function runs once when you press reset or power the board
 void setup()
 {
+	Serial.begin( 115200 );
+	while( !Serial )
+		;
 	// initialize digital pin LED_BUILTIN as an output.
 	pinMode( LED_BUILTIN, OUTPUT );
-	Serial.begin( 115200 );
-	delay( 1000 );
 
 	if( const auto success = LittleFS.begin(); !success )
 		hang( "Error mounting the file system" );
@@ -291,6 +324,8 @@ void setup()
 void loop()
 {
 	server.handleClient();
+	dhtSensorRead();
+
 	if( Serial.available() > 0 )
 	{
 		const auto incomingByte = Serial.read();
