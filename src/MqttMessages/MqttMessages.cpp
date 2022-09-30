@@ -213,7 +213,7 @@ void MqttClientForIR::sendInitValues()
 
 void MqttClientForIR::publishStatus()
 {
-	m_mqttClient.publish( ( m_device + "/" ).c_str(), 0, true, m_whirpoolData->get().c_str() );
+	m_mqttClient.publish( ( m_device + "/" ).c_str(), 0, true, m_whirpoolData->getJson().c_str() );
 }
 
 void MqttClientForIR::publishTemperature()
@@ -259,7 +259,7 @@ void MqttClientForIR::publishSleep()
 
 void MqttClientForIR::publishCommited()
 {
-	m_mqttClient.publish( ( m_device + "/commited" ).c_str(), 0, false, m_whirpoolData->get().c_str() );
+	m_mqttClient.publish( ( m_device + "/commited" ).c_str(), 0, false, m_whirpoolData->getJson().c_str() );
 }
 
 void MqttClientForIR::onTemperature( std::string_view value )

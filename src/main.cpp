@@ -22,11 +22,9 @@
 #include <IRremote.hpp>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
-#include <dhtnew.h>
-
 #include "MqttMessages/MqttMessages.hpp"
 #include "Whirlpool_YJ1B/Whirlpool_YJ1B.hpp"
-
+#include "DHTSensor.hpp"
 #define MY_TZ "CET-1CEST,M3.5.0,M10.5.0/3"
 
 char mqtt_server[ 40 ];
@@ -40,7 +38,7 @@ WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
 WhirlpoolYJ1B g_whirpool;
 MqttClientForIR mqtt( &g_whirpool );
-DHTNEW dhtSensor( DHT_PIN );
+DHTSensor dhtSensor( DHT_PIN );
 Ticker blinker;
 ESP8266HTTPUpdateServer httpUpdater;
 // https://www.mischianti.org/2020/06/30/how-to-create-a-rest-server-on-esp8266-or-esp32-post-put-patch-delete-part-3/
@@ -178,7 +176,7 @@ void readConfiguration()
 void onCommit( WhirlpoolYJ1B* data )
 {
 	Serial.print( "Commit: " );
-	Serial.println( data->get().c_str() );
+	Serial.println( data->getJson().c_str() );
 	time_t now; // this is the epoch
 	tm tm;
 	time( &now );			  // read the current time
@@ -197,34 +195,6 @@ void blink()
 	static bool state{ false };
 	digitalWrite( LED_BUILTIN, state ); // turn the LED on (HIGH is the voltage level)
 	state = !state;
-}
-
-void dhtSensorRead()
-{
-	static auto lastTime = millis();
-	if( millis() - lastTime > DHT_READ_RATE )
-	{
-		lastTime = millis();
-
-		const auto ret = dhtSensor.read();
-
-		if( ret != DHTLIB_WAITING_FOR_READ )
-		{
-			switch( ret )
-			{
-			case DHTLIB_OK:
-			{
-				Serial.print( dhtSensor.getHumidity(), 1 );
-				Serial.print( "\t" );
-				Serial.println( dhtSensor.getTemperature(), 1 );
-			}
-			break;
-			default:
-				Serial.println( "Sensor read error" );
-				break;
-			};
-		}
-	}
 }
 
 void showTime()
@@ -256,13 +226,16 @@ void showTime()
 
 void restServerRouting()
 {
-	server.on( F( "/api/v1" ), HTTP_GET, []() { server.send( 200, F( "text/html" ), g_whirpool.get().c_str() ); } );
+	server.on(
+		F( "/api/v1/status" ), HTTP_GET, []() { server.send( 200, F( "text/html" ), g_whirpool.getJson().c_str() ); } );
+	server.on(
+		F( "/api/v1/environment" ), HTTP_GET, []() { server.send( 200, F( "text/html" ), dhtSensor.getJson().c_str() ); } );
 	server.on( F( "/api/v1/commit" ),
 			   HTTP_PATCH,
 			   []()
 			   {
 				   onCommit( &g_whirpool );
-				   server.send( 200, F( "text/html" ), g_whirpool.get().c_str() );
+				   server.send( 200, F( "text/html" ), g_whirpool.getJson().c_str() );
 			   } );
 }
 
@@ -323,8 +296,8 @@ void setup()
 // the loop function runs over and over again forever
 void loop()
 {
+	dhtSensor.loop( DHT_READ_RATE );
 	server.handleClient();
-	dhtSensorRead();
 
 	if( Serial.available() > 0 )
 	{

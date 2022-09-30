@@ -197,7 +197,7 @@ public:
 	std::string_view getSwingText() const;
 	std::string_view getSleepText() const;
 
-	std::string get() const;
+	std::string getJson() const;
 
 #ifdef TRACE
 	void printDebug()

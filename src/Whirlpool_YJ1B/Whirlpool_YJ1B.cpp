@@ -206,7 +206,7 @@ string_view WhirlpoolYJ1B::getSleepText() const
 	return mapOnOff.at( getSleep() );
 }
 
-std::string WhirlpoolYJ1B::get() const
+std::string WhirlpoolYJ1B::getJson() const
 {
 	StaticJsonDocument< 1024 > doc;
 	doc[ "temperature" ] = getTemperature();
