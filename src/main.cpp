@@ -39,7 +39,6 @@ WiFiEventHandler wifiDisconnectHandler;
 WhirlpoolYJ1B g_whirpool;
 MqttClientForIR mqtt( &g_whirpool );
 DHTSensor dhtSensor( DHT_PIN );
-Ticker blinker;
 ESP8266HTTPUpdateServer httpUpdater;
 // https://www.mischianti.org/2020/06/30/how-to-create-a-rest-server-on-esp8266-or-esp32-post-put-patch-delete-part-3/
 ESP8266WebServer server( 80 );
@@ -193,8 +192,19 @@ void onCommit( WhirlpoolYJ1B* data )
 void blink()
 {
 	static bool state{ false };
-	digitalWrite( LED_BUILTIN, state ); // turn the LED on (HIGH is the voltage level)
-	state = !state;
+	static auto lastTime = millis();
+	const auto current = millis();
+	if( current - lastTime > 1000 )
+	{
+		lastTime = current;
+		state = true;
+		digitalWrite( LED_BUILTIN, LOW ); 
+	}
+	if(state && current - lastTime > 5 )
+	{
+		state = false;
+		digitalWrite( LED_BUILTIN, HIGH ); 
+	}
 }
 
 void showTime()
@@ -228,8 +238,9 @@ void restServerRouting()
 {
 	server.on(
 		F( "/api/v1/status" ), HTTP_GET, []() { server.send( 200, F( "text/html" ), g_whirpool.getJson().c_str() ); } );
-	server.on(
-		F( "/api/v1/environment" ), HTTP_GET, []() { server.send( 200, F( "text/html" ), dhtSensor.getJson().c_str() ); } );
+	server.on( F( "/api/v1/environment" ),
+			   HTTP_GET,
+			   []() { server.send( 200, F( "text/html" ), dhtSensor.getJson().c_str() ); } );
 	server.on( F( "/api/v1/commit" ),
 			   HTTP_PATCH,
 			   []()
@@ -279,8 +290,6 @@ void setup()
 	IrSender.begin( false );
 	IrSender.enableIROut( AC_KHZ );
 
-	blinker.attach_ms( 200, blink );
-
 	httpUpdater.setup( &server, "/update" );
 
 	// Set server routing
@@ -296,6 +305,7 @@ void setup()
 // the loop function runs over and over again forever
 void loop()
 {
+	blink();
 	dhtSensor.loop( DHT_READ_RATE );
 	server.handleClient();
 

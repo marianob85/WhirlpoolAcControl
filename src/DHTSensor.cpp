@@ -7,14 +7,14 @@ DHTSensor::DHTSensor( uint8_t pin ) : m_sensor( pin ) {}
 
 void DHTSensor::loop( unsigned readRate )
 {
-	m_humidity.reset();
-	m_temperature.reset();
-	m_lastError.reset();
-
 	static auto lastTime = millis();
 	if( millis() - lastTime > readRate )
 	{
 		lastTime = millis();
+
+		m_humidity.reset();
+		m_temperature.reset();
+		m_lastError.reset();
 
 		if( const auto ret = m_sensor.read(); ret == DHTLIB_OK )
 		{
