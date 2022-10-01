@@ -9,7 +9,7 @@
 #define RAW_BUFFER_LENGTH 0
 
 #define IR_SEND_PIN 4
-#define DHT_PIN 0 // You should avoid GPIO0, GPIO2 and GPIO15
+#define DHT_PIN 2
 #define DHT_READ_RATE 20000
 
 #include <ESP8266WiFi.h>
@@ -193,17 +193,17 @@ void blink()
 {
 	static bool state{ false };
 	static auto lastTime = millis();
-	const auto current = millis();
+	const auto current	 = millis();
 	if( current - lastTime > 1000 )
 	{
 		lastTime = current;
-		state = true;
-		digitalWrite( LED_BUILTIN, LOW ); 
+		state	 = true;
+		digitalWrite( LED_BUILTIN, LOW );
 	}
-	if(state && current - lastTime > 5 )
+	if( state && current - lastTime > 5 )
 	{
 		state = false;
-		digitalWrite( LED_BUILTIN, HIGH ); 
+		digitalWrite( LED_BUILTIN, HIGH );
 	}
 }
 
@@ -319,6 +319,9 @@ void loop()
 			break;
 		case '1':
 			onCommit( &g_whirpool );
+			break;
+		case '2':
+			Serial.println( dhtSensor.getJson().c_str() );
 			break;
 		case 'r':
 			WiFiManager wifiManager;
