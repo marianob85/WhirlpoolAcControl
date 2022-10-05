@@ -22,17 +22,14 @@
 #include <IRremote.hpp>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
-#include "MqttMessages/MqttMessages.hpp"
-#include "Whirlpool_YJ1B/Whirlpool_YJ1B.hpp"
+#include "MqttMessages.hpp"
+#include "Whirlpool_YJ1B.hpp"
 #include "DHTSensor.hpp"
+#include "Config.hpp"
+#include "WifiParameters.hpp"
 #define MY_TZ "CET-1CEST,M3.5.0,M10.5.0/3"
 
-char mqtt_server[ 40 ];
-char mqtt_port[ 6 ]		 = "1883";
-char host_name[ 20 ]	 = "IR_MQTT";
-char mqtt_password[ 20 ] = "";
-char mqtt_user[ 20 ]	 = "";
-char mqtt_device[ 20 ]	 = "default";
+using namespace std;
 
 WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
@@ -42,6 +39,7 @@ DHTSensor dhtSensor( DHT_PIN );
 ESP8266HTTPUpdateServer httpUpdater;
 // https://www.mischianti.org/2020/06/30/how-to-create-a-rest-server-on-esp8266-or-esp32-post-put-patch-delete-part-3/
 ESP8266WebServer server( 80 );
+ConfigDevice deviceConfig;
 
 void hang( const char* message )
 {
@@ -57,27 +55,19 @@ void configModeCallback( WiFiManager* myWiFiManager )
 	Serial.println( myWiFiManager->getConfigPortalSSID() );
 }
 
-void saveParamsCallback( const WiFiManagerParameter* server,
-						 const WiFiManagerParameter* port,
-						 const WiFiManagerParameter* hostName,
-						 const WiFiManagerParameter* user,
-						 const WiFiManagerParameter* password,
-						 const WiFiManagerParameter* device )
+void saveParamsCallback( const ConfigDevice* config )
 {
-	strncpy( mqtt_server, server->getValue(), sizeof( mqtt_server ) );
-	strncpy( mqtt_port, port->getValue(), sizeof( mqtt_port ) );
-	strncpy( host_name, hostName->getValue(), sizeof( host_name ) );
-	strncpy( mqtt_user, user->getValue(), sizeof( mqtt_user ) );
-	strncpy( mqtt_password, password->getValue(), sizeof( mqtt_password ) );
-	strncpy( mqtt_device, device->getValue(), sizeof( mqtt_device ) );
+	deviceConfig	 = *config;
+	const auto& host = config->host();
+	const auto& mqtt = config->mqtt();
 
 	DynamicJsonDocument json( 512 );
-	json[ "mqtt_server" ]	= mqtt_server;
-	json[ "mqtt_port" ]		= mqtt_port;
-	json[ "host_name" ]		= host_name;
-	json[ "mqtt_user" ]		= mqtt_user;
-	json[ "mqtt_password" ] = mqtt_password;
-	json[ "mqtt_device" ]	= mqtt_device;
+	json[ "mqtt_server" ]	= mqtt.server;
+	json[ "mqtt_port" ]		= mqtt.port;
+	json[ "host_name" ]		= host.hostName;
+	json[ "mqtt_user" ]		= mqtt.user;
+	json[ "mqtt_password" ] = mqtt.password;
+	json[ "mqtt_device" ]	= mqtt.name;
 
 	File configFile = LittleFS.open( "/config.json", "w" );
 	if( !configFile )
@@ -102,28 +92,11 @@ void onWifiDisconnect( const WiFiEventStationModeDisconnected& event )
 
 void setupWifi()
 {
-	WiFiManagerParameter custom_mqtt_server( "server", "MQTT server IP", mqtt_server, sizeof( mqtt_server ) );
-	WiFiManagerParameter custom_mqtt_port( "port", "MQTT server port", mqtt_port, sizeof( mqtt_port ) );
-	WiFiManagerParameter custom_hostname( "hostname", "Wifi host name", host_name, sizeof( host_name ) );
-	WiFiManagerParameter custom_mqtt_user( "mqtt_user", "MQTT user", mqtt_user, sizeof( mqtt_user ) );
-	WiFiManagerParameter custom_mqtt_password(
-		"mqtt_password", "MQTT password", mqtt_password, sizeof( mqtt_password ) );
-	WiFiManagerParameter custom_mqtt_device( "mqtt_device", "MQTT device", mqtt_device, sizeof( mqtt_device ) );
-
 	WiFiManager wifiManager;
-	wifiManager.setHostname( host_name );
-	wifiManager.setAPCallback( configModeCallback );
-	wifiManager.setSaveParamsCallback( std::bind( saveParamsCallback,
-												  &custom_mqtt_server,
-												  &custom_mqtt_port,
-												  &custom_hostname,
-												  &custom_mqtt_user,
-												  &custom_mqtt_password,
-												  &custom_mqtt_device ) );
+	WifiParameters wifiParameters( &wifiManager, &deviceConfig );
 
-	wifiManager.addParameter( &custom_mqtt_server );
-	wifiManager.addParameter( &custom_mqtt_port );
-	wifiManager.addParameter( &custom_hostname );
+	wifiManager.setHostname( deviceConfig.host().hostName.c_str() );
+	wifiManager.setAPCallback( configModeCallback );
 
 	wifiConnectHandler	  = WiFi.onStationModeGotIP( onWifiConnect );
 	wifiDisconnectHandler = WiFi.onStationModeDisconnected( onWifiDisconnect );
@@ -162,12 +135,14 @@ void readConfiguration()
 	if( error )
 		hang( "Failed to parse json configuration" );
 
-	strncpy( mqtt_server, json[ "mqtt_server" ], sizeof( mqtt_server ) );
-	strncpy( mqtt_port, json[ "mqtt_port" ], sizeof( mqtt_port ) );
-	strncpy( host_name, json[ "host_name" ], sizeof( host_name ) );
-	strncpy( mqtt_user, json[ "mqtt_user" ], sizeof( mqtt_user ) );
-	strncpy( mqtt_password, json[ "mqtt_password" ], sizeof( mqtt_password ) );
-	strncpy( mqtt_device, json[ "mqtt_device" ], sizeof( mqtt_device ) );
+	auto& host	  = deviceConfig.host();
+	host.hostName = json[ "host_name" ].as< string >();
+	auto& mqtt	  = deviceConfig.mqtt();
+	mqtt.name	  = json[ "host_name" ].as< string >();
+	mqtt.password = json[ "mqtt_password" ].as< string >();
+	mqtt.user	  = json[ "mqtt_user" ].as< string >();
+	mqtt.port	  = json[ "mqtt_port" ].as< string >();
+	mqtt.server	  = json[ "mqtt_server" ].as< string >();
 
 	file.close();
 }
@@ -281,7 +256,14 @@ void setup()
 		hang( "Error mounting the file system" );
 
 	readConfiguration();
-	mqtt.setup( mqtt_server, std::stoi( mqtt_port ), mqtt_user, mqtt_password, mqtt_device, onCommit );
+
+	const auto& mqttConfig = deviceConfig.mqtt();
+	mqtt.setup( mqttConfig.server.c_str(),
+				std::stoi( mqttConfig.port ),
+				mqttConfig.user.c_str(),
+				mqttConfig.password.c_str(),
+				mqttConfig.name.c_str(),
+				onCommit );
 	setupWifi();
 
 	static const auto dhcp = WiFi.gatewayIP().toString();
