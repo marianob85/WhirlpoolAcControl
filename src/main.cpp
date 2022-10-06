@@ -22,6 +22,7 @@
 #include <IRremote.hpp>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
+#include <Syslog.h>
 #include "MqttMessages.hpp"
 #include "Whirlpool_YJ1B.hpp"
 #include "DHTSensor.hpp"
@@ -41,6 +42,9 @@ ESP8266HTTPUpdateServer httpUpdater;
 ESP8266WebServer server( 80 );
 ConfigDevice deviceConfig;
 
+WiFiUDP udpSysLogClient;
+Syslog syslog( udpSysLogClient, SYSLOG_PROTO_IETF );
+
 void hang( const char* message )
 {
 	Serial.println( message );
@@ -57,9 +61,10 @@ void configModeCallback( WiFiManager* myWiFiManager )
 
 void saveParamsCallback( const ConfigDevice* config )
 {
-	deviceConfig	 = *config;
-	const auto& host = config->host();
-	const auto& mqtt = config->mqtt();
+	deviceConfig	   = *config;
+	const auto& host   = config->host();
+	const auto& mqtt   = config->mqtt();
+	const auto& syslog = config->syslog();
 
 	DynamicJsonDocument json( 512 );
 	json[ "mqtt_server" ]	= mqtt.server;
@@ -68,6 +73,8 @@ void saveParamsCallback( const ConfigDevice* config )
 	json[ "mqtt_user" ]		= mqtt.user;
 	json[ "mqtt_password" ] = mqtt.password;
 	json[ "mqtt_device" ]	= mqtt.name;
+	json[ "syslog_server" ] = syslog.server;
+	json[ "syslog_port" ]	= syslog.port;
 
 	File configFile = LittleFS.open( "/config.json", "w" );
 	if( !configFile )
@@ -269,6 +276,13 @@ void setup()
 	static const auto dhcp = WiFi.gatewayIP().toString();
 	configTime( MY_TZ, dhcp.c_str() );
 
+	const auto& hostConfig	= deviceConfig.host();
+	const auto syslogConfig = deviceConfig.syslog();
+	syslog.server( syslogConfig.getServer(), syslogConfig.getPort() );
+	syslog.deviceHostname( hostConfig.hostName.c_str() );
+	syslog.appName( mqttConfig.name.c_str() );
+	syslog.defaultPriority( LOG_KERN );
+
 	IrSender.begin( false );
 	IrSender.enableIROut( AC_KHZ );
 
@@ -282,6 +296,7 @@ void setup()
 	server.begin();
 
 	Serial.println( "Setup end." );
+	syslog.log( "System startup" );
 }
 
 // the loop function runs over and over again forever

@@ -12,7 +12,9 @@ class WifiParameters
 		MqttServer,
 		MqttPort,
 		MqttName,
-		HostName
+		HostName,
+		SyslogServer,
+		SyslogPort,
 	};
 
 public:

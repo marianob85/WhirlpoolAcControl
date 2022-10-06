@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <IPAddress.h>
 
 class ConfigDevice
 {
@@ -18,13 +19,25 @@ public:
 		std::string name{ "default" };
 	};
 
+	struct ConfigSysLog
+	{
+		std::string server;
+		std::string port;
+
+		IPAddress getServer() const;
+		uint16_t getPort() const;
+	};
+
 	const ConfigHost& host() const;
 	const ConfigMqtt& mqtt() const;
+	const ConfigSysLog& syslog() const;
 
 	ConfigHost& host();
 	ConfigMqtt& mqtt();
+	ConfigSysLog& syslog();
 
 private:
 	ConfigHost m_host;
 	ConfigMqtt m_mqtt;
+	ConfigSysLog m_syslog;
 };
