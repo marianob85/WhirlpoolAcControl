@@ -26,6 +26,8 @@ public:
 
 		IPAddress getServer() const;
 		uint16_t getPort() const;
+
+		bool isSet() const;
 	};
 
 	const ConfigHost& host() const;

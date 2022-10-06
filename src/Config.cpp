@@ -41,3 +41,8 @@ uint16_t ConfigDevice::ConfigSysLog::getPort() const
 {
 	return std::stoi( port );
 }
+
+bool ConfigDevice::ConfigSysLog::isSet() const
+{
+	return !server.empty() && !port.empty();
+}

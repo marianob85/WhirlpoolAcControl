@@ -278,11 +278,17 @@ void setup()
 
 	const auto& hostConfig	= deviceConfig.host();
 	const auto syslogConfig = deviceConfig.syslog();
-	syslog.server( syslogConfig.getServer(), syslogConfig.getPort() );
-	syslog.deviceHostname( hostConfig.hostName.c_str() );
-	syslog.appName( mqttConfig.name.c_str() );
-	syslog.defaultPriority( LOG_KERN );
-
+	if( syslogConfig.isSet() )
+	{
+		syslog.server( syslogConfig.getServer(), syslogConfig.getPort() );
+		syslog.deviceHostname( hostConfig.hostName.c_str() );
+		syslog.appName( mqttConfig.name.c_str() );
+		syslog.defaultPriority( LOG_KERN );
+	}
+	else
+	{
+		Serial.println( "Syslog not set" );
+	}
 	IrSender.begin( false );
 	IrSender.enableIROut( AC_KHZ );
 
