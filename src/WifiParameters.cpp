@@ -5,18 +5,17 @@ using namespace std;
 WifiParameters::WifiParameters( WiFiManager* wifiManager, const ConfigDevice* defaultConfig )
 	: m_wifiManager( wifiManager )
 {
-	const auto& mqtt   = defaultConfig->mqtt();
-	const auto& host   = defaultConfig->host();
-	const auto& syslog = defaultConfig->syslog();
+	const auto& mqtt = defaultConfig->mqtt();
+	const auto& host = defaultConfig->host();
 
-	addParam( Parameters::MqttServer, "server", "MQTT server IP" );
-	addParam( Parameters::MqttPort, "port", "MQTT server port", mqtt.port );
-	addParam( Parameters::HostName, "hostname", "Wifi host name", host.hostName );
-	addParam( Parameters::MqttUser, "mqtt_user", "MQTT user" );
-	addParam( Parameters::MqttPasword, "mqtt_password", "MQTT password" );
-	addParam( Parameters::MqttName, "mqtt_device", "MQTT device", mqtt.name );
-	addParam( Parameters::SyslogServer, "syslog_server", "Syslog server" );
-	addParam( Parameters::SyslogPort, "mqtt_device", "Syslog port", syslog.port );
+	addParam( Parameters::HostName, "hostname", "Wifi host name", host.hostName, 20 );
+	addParam( Parameters::MqttServer, "mqtt_server", "MQTT server IP", 40 );
+	addParam( Parameters::MqttPort, "mqtt_port", "MQTT server port", mqtt.port, 5 );
+	addParam( Parameters::MqttUser, "mqtt_user", "MQTT user", 20 );
+	addParam( Parameters::MqttPasword, "mqtt_password", "MQTT password", 20 );
+	addParam( Parameters::MqttName, "mqtt_device", "MQTT device", mqtt.name, 20 );
+	addParam( Parameters::SyslogServer, "syslog_server", "Syslog server IP", 15 );
+	addParam( Parameters::SyslogPort, "syslog_port", "Syslog port", 5 );
 
 	for( auto& [ _, parameter ] : m_parameters )
 		m_wifiManager->addParameter( parameter.get() );
@@ -45,13 +44,13 @@ void WifiParameters::saveParamsCallback()
 	m_saveParamCallback( &configDevice );
 }
 
-void WifiParameters::addParam( Parameters param, const char* id, const char* label, const string& defaultValue )
+void WifiParameters::addParam(
+	Parameters param, const char* id, const char* label, const string& defaultValue, int length )
 {
-	m_parameters.emplace(
-		param, make_unique< WiFiManagerParameter >( id, label, defaultValue.c_str(), int( defaultValue.length() ) ) );
+	m_parameters.emplace( param, make_unique< WiFiManagerParameter >( id, label, defaultValue.c_str(), length ) );
 }
 
-void WifiParameters::addParam( Parameters param, const char* id, const char* label )
+void WifiParameters::addParam( Parameters param, const char* id, const char* label, int length )
 {
-	m_parameters.emplace( param, make_unique< WiFiManagerParameter >( id, label ) );
+	m_parameters.emplace( param, make_unique< WiFiManagerParameter >( id, label, "", length ) );
 }

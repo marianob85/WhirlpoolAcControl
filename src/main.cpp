@@ -43,7 +43,7 @@ ESP8266WebServer server( 80 );
 ConfigDevice deviceConfig;
 
 WiFiUDP udpSysLogClient;
-Syslog syslog( udpSysLogClient, SYSLOG_PROTO_IETF );
+Syslog syslog( udpSysLogClient, SYSLOG_PROTO_BSD );
 
 void hang( const char* message )
 {
@@ -151,8 +151,10 @@ void readConfiguration()
 	mqtt.port	  = json[ "mqtt_port" ].as< string >();
 	mqtt.server	  = json[ "mqtt_server" ].as< string >();
 	auto& syslog  = deviceConfig.syslog();
-	syslog.server = json[ "syslog_server" ].as< string >();;
-	syslog.port	  = json[ "syslog_port" ].as< string >();;
+	syslog.server = json[ "syslog_server" ].as< string >();
+	;
+	syslog.port = json[ "syslog_port" ].as< string >();
+	;
 	file.close();
 }
 
@@ -160,6 +162,7 @@ void onCommit( WhirlpoolYJ1B* data )
 {
 	Serial.print( "Commit: " );
 	Serial.println( data->getJson().c_str() );
+	syslog.log( data->getJson().c_str() );
 	time_t now; // this is the epoch
 	tm tm;
 	time( &now );			  // read the current time
@@ -278,14 +281,18 @@ void setup()
 	static const auto dhcp = WiFi.gatewayIP().toString();
 	configTime( MY_TZ, dhcp.c_str() );
 
-	const auto& hostConfig	= deviceConfig.host();
+	const auto& hostConfig	 = deviceConfig.host();
 	const auto& syslogConfig = deviceConfig.syslog();
 	if( syslogConfig.isSet() )
 	{
 		syslog.server( syslogConfig.getServer(), syslogConfig.getPort() );
 		syslog.deviceHostname( hostConfig.hostName.c_str() );
-		syslog.appName( mqttConfig.name.c_str() );
+		syslog.appName( hostConfig.hostName.c_str() );
 		syslog.defaultPriority( LOG_KERN );
+		Serial.print( "Connected to syslog: " );
+		Serial.print( syslogConfig.getServer() );
+		Serial.print( ":" );
+		Serial.println( syslogConfig.getPort() );
 	}
 	else
 	{
@@ -329,6 +336,7 @@ void loop()
 			Serial.println( dhtSensor.getJson().c_str() );
 			break;
 		case 'r':
+			syslog.log( "System reset to default" );
 			WiFiManager wifiManager;
 			wifiManager.resetSettings();
 			ESP.reset();

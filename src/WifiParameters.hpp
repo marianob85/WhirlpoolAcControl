@@ -7,12 +7,12 @@ class WifiParameters
 {
 	enum class Parameters
 	{
-		MqttUser,
-		MqttPasword,
+		HostName,
 		MqttServer,
 		MqttPort,
 		MqttName,
-		HostName,
+		MqttUser,
+		MqttPasword,
 		SyslogServer,
 		SyslogPort,
 	};
@@ -25,8 +25,8 @@ public:
 	void saveParamsCallback();
 
 private:
-	void addParam( Parameters param, const char* id, const char* label, const std::string& defaultValue );
-	void addParam( Parameters param, const char* id, const char* labe );
+	void addParam( Parameters param, const char* id, const char* label, const std::string& defaultValue, int length );
+	void addParam( Parameters param, const char* id, const char* label, int length );
 
 private:
 	std::function< void( const ConfigDevice* ) > m_saveParamCallback;
