@@ -22,7 +22,7 @@ public:
 	struct ConfigSysLog
 	{
 		std::string server;
-		std::string port;
+		std::string port{ "514" };
 
 		IPAddress getServer() const;
 		uint16_t getPort() const;

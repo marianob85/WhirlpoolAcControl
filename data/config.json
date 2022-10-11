@@ -4,5 +4,7 @@
     "mqtt_user": "shelly",
     "mqtt_password": "plug@",
     "host_name": "Mariano-IR",
-    "mqtt_device": "Sypialnia"
+    "mqtt_device": "Sypialnia",
+    "syslog_server":"192.168.1.102",
+    "syslog_port" : "1514"
 }

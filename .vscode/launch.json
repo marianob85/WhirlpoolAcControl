@@ -12,9 +12,9 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "C:/Users/Mariano/Documents/GitHub/marianob85/WhirlpoolAcControl/.pio/build/default/firmware.elf",
+            "executable": "D:/Source/GitHub/marianob85/WhirlpoolAcControl/.pio/build/default/firmware.elf",
             "projectEnvName": "default",
-            "toolchainBinDir": "C:/Users/Mariano/.platformio/packages/toolchain-xtensa/bin",
+            "toolchainBinDir": "C:/Users/mariano/.platformio/packages/toolchain-xtensa/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
@@ -25,18 +25,18 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "C:/Users/Mariano/Documents/GitHub/marianob85/WhirlpoolAcControl/.pio/build/default/firmware.elf",
+            "executable": "D:/Source/GitHub/marianob85/WhirlpoolAcControl/.pio/build/default/firmware.elf",
             "projectEnvName": "default",
-            "toolchainBinDir": "C:/Users/Mariano/.platformio/packages/toolchain-xtensa/bin",
+            "toolchainBinDir": "C:/Users/mariano/.platformio/packages/toolchain-xtensa/bin",
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "C:/Users/Mariano/Documents/GitHub/marianob85/WhirlpoolAcControl/.pio/build/default/firmware.elf",
+            "executable": "D:/Source/GitHub/marianob85/WhirlpoolAcControl/.pio/build/default/firmware.elf",
             "projectEnvName": "default",
-            "toolchainBinDir": "C:/Users/Mariano/.platformio/packages/toolchain-xtensa/bin",
+            "toolchainBinDir": "C:/Users/mariano/.platformio/packages/toolchain-xtensa/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"
         }

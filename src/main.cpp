@@ -150,7 +150,9 @@ void readConfiguration()
 	mqtt.user	  = json[ "mqtt_user" ].as< string >();
 	mqtt.port	  = json[ "mqtt_port" ].as< string >();
 	mqtt.server	  = json[ "mqtt_server" ].as< string >();
-
+	auto& syslog  = deviceConfig.syslog();
+	syslog.server = json[ "syslog_server" ].as< string >();;
+	syslog.port	  = json[ "syslog_port" ].as< string >();;
 	file.close();
 }
 
@@ -277,7 +279,7 @@ void setup()
 	configTime( MY_TZ, dhcp.c_str() );
 
 	const auto& hostConfig	= deviceConfig.host();
-	const auto syslogConfig = deviceConfig.syslog();
+	const auto& syslogConfig = deviceConfig.syslog();
 	if( syslogConfig.isSet() )
 	{
 		syslog.server( syslogConfig.getServer(), syslogConfig.getPort() );

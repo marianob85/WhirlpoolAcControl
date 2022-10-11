@@ -1,34 +1,25 @@
 #include "WifiParameters.hpp"
 
+using namespace std;
+
 WifiParameters::WifiParameters( WiFiManager* wifiManager, const ConfigDevice* defaultConfig )
 	: m_wifiManager( wifiManager )
 {
 	const auto& mqtt   = defaultConfig->mqtt();
 	const auto& host   = defaultConfig->host();
 	const auto& syslog = defaultConfig->syslog();
-	m_parameters.emplace( Parameters::MqttServer, WiFiManagerParameter{ "server", "MQTT server IP" } );
-	m_parameters.emplace(
-		Parameters::MqttPort,
-		WiFiManagerParameter{ "port", "MQTT server port", mqtt.port.c_str(), int( mqtt.port.length() ) } );
-	m_parameters.emplace(
-		Parameters::HostName,
-		WiFiManagerParameter{ "hostname", "Wifi host name", host.hostName.c_str(), int( host.hostName.length() ) } );
-	m_parameters.emplace( Parameters::MqttUser, WiFiManagerParameter{ "mqtt_user", "MQTT user" } );
-	m_parameters.emplace( Parameters::MqttPasword, WiFiManagerParameter{ "mqtt_password", "MQTT password" } );
-	m_parameters.emplace(
-		Parameters::MqttName,
-		WiFiManagerParameter{ "mqtt_device", "MQTT device", mqtt.name.c_str(), int( mqtt.name.length() ) } );
 
-	m_parameters.emplace(
-		Parameters::SyslogServer,
-		WiFiManagerParameter{
-			"syslog_server", "Syslog server", syslog.server.c_str(), int( syslog.server.length() ) } );
-	m_parameters.emplace(
-		Parameters::SyslogPort,
-		WiFiManagerParameter{ "mqtt_device", "Syslog port", syslog.port.c_str(), int( syslog.port.length() ) } );
+	addParam( Parameters::MqttServer, "server", "MQTT server IP" );
+	addParam( Parameters::MqttPort, "port", "MQTT server port", mqtt.port );
+	addParam( Parameters::HostName, "hostname", "Wifi host name", host.hostName );
+	addParam( Parameters::MqttUser, "mqtt_user", "MQTT user" );
+	addParam( Parameters::MqttPasword, "mqtt_password", "MQTT password" );
+	addParam( Parameters::MqttName, "mqtt_device", "MQTT device", mqtt.name );
+	addParam( Parameters::SyslogServer, "syslog_server", "Syslog server" );
+	addParam( Parameters::SyslogPort, "mqtt_device", "Syslog port", syslog.port );
 
 	for( auto& [ _, parameter ] : m_parameters )
-		m_wifiManager->addParameter( &parameter );
+		m_wifiManager->addParameter( parameter.get() );
 }
 
 void WifiParameters::setSaveParamsCallback( std::function< void( const ConfigDevice* ) > callback )
@@ -43,13 +34,24 @@ void WifiParameters::saveParamsCallback()
 	auto& host	  = configDevice.host();
 	auto& mqtt	  = configDevice.mqtt();
 	auto& syslog  = configDevice.syslog();
-	host.hostName = m_parameters.at( Parameters::HostName ).getValue();
-	mqtt.name	  = m_parameters.at( Parameters::MqttName ).getValue();
-	mqtt.server	  = m_parameters.at( Parameters::MqttServer ).getValue();
-	mqtt.port	  = m_parameters.at( Parameters::MqttPort ).getValue();
-	mqtt.user	  = m_parameters.at( Parameters::MqttUser ).getValue();
-	mqtt.password = m_parameters.at( Parameters::MqttPasword ).getValue();
-	syslog.server = m_parameters.at( Parameters::SyslogServer ).getValue();
-	syslog.port	  = m_parameters.at( Parameters::SyslogPort ).getValue();
+	host.hostName = m_parameters.at( Parameters::HostName )->getValue();
+	mqtt.name	  = m_parameters.at( Parameters::MqttName )->getValue();
+	mqtt.server	  = m_parameters.at( Parameters::MqttServer )->getValue();
+	mqtt.port	  = m_parameters.at( Parameters::MqttPort )->getValue();
+	mqtt.user	  = m_parameters.at( Parameters::MqttUser )->getValue();
+	mqtt.password = m_parameters.at( Parameters::MqttPasword )->getValue();
+	syslog.server = m_parameters.at( Parameters::SyslogServer )->getValue();
+	syslog.port	  = m_parameters.at( Parameters::SyslogPort )->getValue();
 	m_saveParamCallback( &configDevice );
+}
+
+void WifiParameters::addParam( Parameters param, const char* id, const char* label, const string& defaultValue )
+{
+	m_parameters.emplace(
+		param, make_unique< WiFiManagerParameter >( id, label, defaultValue.c_str(), int( defaultValue.length() ) ) );
+}
+
+void WifiParameters::addParam( Parameters param, const char* id, const char* label )
+{
+	m_parameters.emplace( param, make_unique< WiFiManagerParameter >( id, label ) );
 }
